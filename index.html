@@ -21,6 +21,19 @@
       font-size: 0.9em;
       color: #333;
     }
+    #top-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    #top-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
     #chat-box {
       border: 1px solid #ccc;
       padding: 10px;
@@ -64,7 +77,7 @@
       max-height: 12em;
       overflow-y: auto;
     }
-    #send-btn, #connect-btn {
+    #send-btn {
       padding: 8px 12px;
       font-size: 1em;
     }
@@ -73,10 +86,11 @@
       margin-left: 6px;
     }
     #settings {
-      margin-top: 10px;
       display: flex;
-      flex-direction: column;
-      gap: 5px;
+      flex-direction: row;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     label {
       font-size: 0.9em;
@@ -85,26 +99,28 @@
 </head>
 <body>
   <h2>LoRa Chat (Web UI)</h2>
-  <div id="status">尚未連接藍牙</div>
+  <div id="top-bar">
+    <div id="status">尚未連接藍牙</div>
+    <button id="connect-btn">連接 BLE</button>
+    <div id="settings">
+      <label>選擇字體：
+        <select id="font-select">
+          <option value="Segoe UI">Segoe UI</option>
+          <option value="Arial">Arial</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Noto Sans TC">Noto Sans TC</option>
+          <option value="serif">Serif</option>
+        </select>
+      </label>
+      <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
+    </div>
+  </div>
+
   <div id="chat-box"></div>
+
   <div id="input-area">
     <textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea>
     <button id="send-btn">傳送</button>
-    <button id="connect-btn">連接 BLE</button>
-  </div>
-  <div id="settings">
-    <label>選擇字體：
-      <select id="font-select">
-        <option value="Segoe UI">Segoe UI</option>
-        <option value="Arial">Arial</option>
-        <option value="Courier New">Courier New</option>
-        <option value="Noto Sans TC">Noto Sans TC</option>
-        <option value="serif">Serif</option>
-      </select>
-    </label>
-    <label>選擇背景顏色：
-      <input type="color" id="bg-color" value="#ffffff">
-    </label>
   </div>
 
   <script>
@@ -180,11 +196,12 @@
     sendBtn.onclick = sendMessage;
 
     msgInput.addEventListener('keydown', e => {
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
       if (e.key === "Enter") {
-        if (!e.shiftKey) {
+        if (!e.shiftKey && !isMobile) {
           e.preventDefault();
           sendMessage();
-        } // Shift+Enter = 換行
+        }
       }
     });
 
