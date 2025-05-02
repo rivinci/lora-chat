@@ -58,6 +58,10 @@
       flex: 1;
       padding: 8px;
       font-size: 1em;
+      resize: vertical;
+      min-height: 4em;
+      max-height: 12em;
+      overflow-y: auto;
     }
     #send-btn, #connect-btn {
       padding: 8px 12px;
@@ -67,6 +71,15 @@
       content: "📤";
       margin-left: 6px;
     }
+    #settings {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    label {
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
@@ -74,9 +87,23 @@
   <div id="status">尚未連接藍牙</div>
   <div id="chat-box"></div>
   <div id="input-area">
-    <textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea>
+    <textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea>
     <button id="send-btn">傳送</button>
     <button id="connect-btn">連接 BLE</button>
+  </div>
+  <div id="settings">
+    <label>選擇字體：
+      <select id="font-select">
+        <option value="Segoe UI">Segoe UI</option>
+        <option value="Arial">Arial</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Noto Sans TC">Noto Sans TC</option>
+        <option value="serif">Serif</option>
+      </select>
+    </label>
+    <label>選擇背景顏色：
+      <input type="color" id="bg-color" value="#ffffff">
+    </label>
   </div>
 
   <script>
@@ -85,6 +112,8 @@
     const connectBtn = document.getElementById('connect-btn');
     const msgInput = document.getElementById('msg-input');
     const statusText = document.getElementById('status');
+    const fontSelect = document.getElementById('font-select');
+    const bgColorPicker = document.getElementById('bg-color');
 
     let bleDevice;
     let bleServer;
@@ -154,7 +183,7 @@
         if (!e.shiftKey) {
           e.preventDefault();
           sendMessage();
-        } // 若是 Shift+Enter 則允許換行
+        } // Shift+Enter = 換行
       }
     });
 
@@ -196,8 +225,19 @@
       }
     };
 
+    fontSelect.addEventListener('change', () => {
+      chatBox.style.fontFamily = fontSelect.value;
+      msgInput.style.fontFamily = fontSelect.value;
+    });
+
+    bgColorPicker.addEventListener('input', () => {
+      chatBox.style.backgroundColor = bgColorPicker.value;
+    });
+
     loadHistory();
     loadInput();
   </script>
 </body>
 </html>
+
+
