@@ -15,6 +15,12 @@
   <style>
     body { font-family: "Segoe UI", sans-serif; margin: 0; padding: 10px; background-color: #f0f4f8; }
     h2 { text-align: center; color: #2a6f97; }
+    #status {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+      color: #333;
+    }
     #chat-box {
       border: 1px solid #ccc;
       padding: 10px;
@@ -57,13 +63,18 @@
       padding: 8px 12px;
       font-size: 1em;
     }
+    #send-btn::after {
+      content: "📤";
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body>
   <h2>LoRa Chat (Web UI)</h2>
+  <div id="status">尚未連接藍牙</div>
   <div id="chat-box"></div>
   <div id="input-area">
-    <input id="msg-input" type="text" placeholder="輸入訊息..." />
+    <textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea>
     <button id="send-btn">傳送</button>
     <button id="connect-btn">連接 BLE</button>
   </div>
@@ -73,12 +84,14 @@
     const sendBtn = document.getElementById('send-btn');
     const connectBtn = document.getElementById('connect-btn');
     const msgInput = document.getElementById('msg-input');
+    const statusText = document.getElementById('status');
 
     let bleDevice;
     let bleServer;
     let bleService;
     let bleCharacteristicTX;
     let bleCharacteristicRX;
+    let disconnectNotified = false;
 
     const HISTORY_KEY = "lora-chat-history";
     const INPUT_KEY = "lora-chat-input";
@@ -137,9 +150,11 @@
     sendBtn.onclick = sendMessage;
 
     msgInput.addEventListener('keydown', e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+      if (e.key === "Enter") {
+        if (!e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        } // 若是 Shift+Enter 則允許換行
       }
     });
 
@@ -148,6 +163,14 @@
         bleDevice = await navigator.bluetooth.requestDevice({
           filters: [{ namePrefix: 'ESP32' }],
           optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
+        });
+
+        bleDevice.addEventListener('gattserverdisconnected', () => {
+          statusText.textContent = "❌ 藍牙已中斷";
+          if (!disconnectNotified) {
+            appendMsg("系統", "⚠️ 藍牙已中斷連線");
+            disconnectNotified = true;
+          }
         });
 
         bleServer = await bleDevice.gatt.connect();
@@ -163,18 +186,18 @@
           appendMsg("ESP32", value);
         });
 
+        statusText.textContent = "✅ 已連接 ESP32 BLE";
+        disconnectNotified = false;
         appendMsg("系統", "✅ 已連接 ESP32 BLE");
       } catch (err) {
         console.error(err);
+        statusText.textContent = "❌ 藍牙連線失敗";
         appendMsg("系統", "❌ BLE 連線失敗");
       }
     };
 
-    // 初始化載入歷史訊息與輸入文字
     loadHistory();
     loadInput();
   </script>
 </body>
 </html>
-
-
