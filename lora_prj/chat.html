@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LoRa Chat UI</title>
+  <link rel="manifest" href="manifest.json"> <!-- ✅ 放在 style 外 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log("✅ Service Worker 註冊成功"))
+        .catch(err => console.error("❌ Service Worker 註冊失敗:", err));
+    }
+  </script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    #chat-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; background: #f9f9f9; }
+    #input-area { margin-top: 10px; }
+    #msg-input { width: 80%; padding: 5px; }
+    #send-btn, #connect-btn { padding: 5px 10px; }
+  </style>
+</head>
+
+<body>
+  <h2>LoRa Chat (Web UI)</h2>
+  <div id="chat-box"></div>
+  <div id="input-area">
+    <input id="msg-input" type="text" placeholder="輸入訊息..." />
+    <button id="send-btn">傳送</button>
+    <button id="connect-btn">連接 BLE</button>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const sendBtn = document.getElementById('send-btn');
+    const connectBtn = document.getElementById('connect-btn');
+    const msgInput = document.getElementById('msg-input');
+
+    let bleDevice;
+    let bleServer;
+    let bleService;
+    let bleCharacteristicTX;
+    let bleCharacteristicRX;
+
+    // --- 無 BLE 模式（模擬 LoRa 對話） ---
+    function mockReply(message) {
+      setTimeout(() => {
+        appendMsg("ESP32 (模擬)", `收到「${message}」`);
+      }, 1000);
+    }
+
+    // --- 顯示訊息 ---
+    function appendMsg(from, text) {
+      const p = document.createElement('p');
+      p.textContent = `${from}: ${text}`;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // --- 傳送訊息按鈕 ---
+    sendBtn.onclick = async () => {
+      const msg = msgInput.value.trim();
+      if (!msg) return;
+
+      appendMsg("你", msg);
+      msgInput.value = "";
+
+      // 如果已連 BLE，發送訊息
+      if (bleCharacteristicTX) {
+        const encoder = new TextEncoder();
+        await bleCharacteristicTX.writeValue(encoder.encode(msg));
+      } else {
+        // 模擬對話
+        mockReply(msg);
+      }
+    };
+
+    // --- BLE 掃描與連線 ---
+    connectBtn.onclick = async () => {
+      try {
+        bleDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'ESP32' }],
+          optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"] // UART Service
+        });
+
+        bleServer = await bleDevice.gatt.connect();
+        bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+
+        bleCharacteristicTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e"); // Write
+        bleCharacteristicRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e"); // Notify
+
+        await bleCharacteristicRX.startNotifications();
+        bleCharacteristicRX.addEventListener('characteristicvaluechanged', event => {
+          const decoder = new TextDecoder();
+          const value = decoder.decode(event.target.value);
+          appendMsg("ESP32", value);
+        });
+
+        appendMsg("系統", "✅ 已連接 ESP32 BLE");
+      } catch (err) {
+        console.error(err);
+        appendMsg("系統", "❌ BLE 連線失敗");
+      }
+    };
+  </script>
+</body>
+</html>
