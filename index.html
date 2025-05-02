@@ -13,15 +13,35 @@
     }
   </script>
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 10px; }
-    h2 { text-align: center; }
+    body { font-family: "Segoe UI", sans-serif; margin: 0; padding: 10px; background-color: #f0f4f8; }
+    h2 { text-align: center; color: #2a6f97; }
     #chat-box {
       border: 1px solid #ccc;
       padding: 10px;
       height: 50vh;
       overflow-y: scroll;
-      background: #f9f9f9;
+      background: #ffffff;
       margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .msg {
+      max-width: 70%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 1em;
+      word-wrap: break-word;
+    }
+    .me {
+      align-self: flex-end;
+      background-color: #d0f0fd;
+      color: #003f5c;
+    }
+    .other {
+      align-self: flex-start;
+      background-color: #e2e2e2;
+      color: #000;
     }
     #input-area {
       display: flex;
@@ -60,17 +80,42 @@
     let bleCharacteristicTX;
     let bleCharacteristicRX;
 
+    const HISTORY_KEY = "lora-chat-history";
+    const INPUT_KEY = "lora-chat-input";
+
+    function appendMsg(from, text) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (from === "你" ? 'me' : 'other');
+      div.textContent = `${text}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      saveHistory();
+    }
+
+    function saveHistory() {
+      localStorage.setItem(HISTORY_KEY, chatBox.innerHTML);
+    }
+
+    function loadHistory() {
+      const saved = localStorage.getItem(HISTORY_KEY);
+      if (saved) chatBox.innerHTML = saved;
+    }
+
+    function saveInput() {
+      localStorage.setItem(INPUT_KEY, msgInput.value);
+    }
+
+    function loadInput() {
+      const saved = localStorage.getItem(INPUT_KEY);
+      if (saved) msgInput.value = saved;
+    }
+
+    msgInput.addEventListener('input', saveInput);
+
     function mockReply(message) {
       setTimeout(() => {
         appendMsg("ESP32 (模擬)", `收到「${message}」`);
       }, 1000);
-    }
-
-    function appendMsg(from, text) {
-      const p = document.createElement('p');
-      p.textContent = `${from}: ${text}`;
-      chatBox.appendChild(p);
-      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
     async function sendMessage() {
@@ -79,6 +124,7 @@
 
       appendMsg("你", msg);
       msgInput.value = "";
+      saveInput();
 
       if (bleCharacteristicTX) {
         const encoder = new TextEncoder();
@@ -88,10 +134,8 @@
       }
     }
 
-    // 綁定傳送按鈕
     sendBtn.onclick = sendMessage;
 
-    // 綁定 Enter 鍵送出
     msgInput.addEventListener('keydown', e => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -125,6 +169,12 @@
         appendMsg("系統", "❌ BLE 連線失敗");
       }
     };
+
+    // 初始化載入歷史訊息與輸入文字
+    loadHistory();
+    loadInput();
   </script>
 </body>
 </html>
+
+
