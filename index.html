@@ -206,42 +206,47 @@
     });
 
     connectBtn.onclick = async () => {
-      try {
-        bleDevice = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'ESP32' }],
-          optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
-        });
+  try {
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'ESP32' }],
+      optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
+    });
 
-        bleDevice.addEventListener('gattserverdisconnected', () => {
-          statusText.textContent = "❌ 藍牙已中斷";
-          if (!disconnectNotified) {
-            appendMsg("系統", "⚠️ 藍牙已中斷連線");
-            disconnectNotified = true;
-          }
-        });
-
-        bleServer = await bleDevice.gatt.connect();
-        bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-
-        bleCharacteristicTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-        bleCharacteristicRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
-
-        await bleCharacteristicRX.startNotifications();
-        bleCharacteristicRX.addEventListener('characteristicvaluechanged', event => {
-          const decoder = new TextDecoder();
-          const value = decoder.decode(event.target.value);
-          appendMsg("ESP32", value);
-        });
-
-        statusText.textContent = "✅ 已連接 ESP32 BLE";
-        disconnectNotified = false;
-        appendMsg("系統", "✅ 已連接 ESP32 BLE");
-      } catch (err) {
-        console.error(err);
-        statusText.textContent = "❌ 藍牙連線失敗";
-        appendMsg("系統", "❌ BLE 連線失敗");
+    bleDevice.addEventListener('gattserverdisconnected', () => {
+      statusText.textContent = "❌ 藍牙已中斷";
+      if (!disconnectNotified) {
+        appendMsg("系統", "⚠️ 藍牙已中斷連線");
+        disconnectNotified = true;
       }
+    });
+
+    bleServer = await bleDevice.gatt.connect();
+    bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+
+    bleCharacteristicTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    bleCharacteristicRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+
+    await bleCharacteristicRX.startNotifications();
+    bleCharacteristicRX.addEventListener('characteristicvaluechanged', event => {
+      const decoder = new TextDecoder();
+      const value = decoder.decode(event.target.value);
+      appendMsg("ESP32", value);
+    });
+
+    // ✅ 通知 ESP32 前端已經可以接收 notify
+    const encoder = new TextEncoder();
+    await bleCharacteristicTX.writeValue(encoder.encode(":subscribed"));
+
+    statusText.textContent = "✅ 已連接 ESP32 BLE";
+    disconnectNotified = false;
+    appendMsg("系統", "✅ 已連接 ESP32 BLE");
+  } catch (err) {
+    console.error(err);
+    statusText.textContent = "❌ 藍牙連線失敗";
+    appendMsg("系統", "❌ BLE 連線失敗");
+  }
     };
+
 
     fontSelect.addEventListener('change', () => {
       chatBox.style.fontFamily = fontSelect.value;
