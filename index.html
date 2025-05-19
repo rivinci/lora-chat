@@ -3,66 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoRa Chat UI (含帳號系統)</title>
+  <title>LoRa Chat UI (含帳號 + 主題配色)</title>
   <link rel="manifest" href="manifest.json" />
-  <!-- js‑sha256 CDN -->
+  <!-- js-sha256 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
   <script>
-    // ===== Service‑Worker =====
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("✅ Service Worker 註冊成功"))
-        .catch(err => console.error("❌ Service Worker 註冊失敗:", err));
+      navigator.serviceWorker.register("service-worker.js").catch(console.error);
     }
   </script>
   <style>
     :root {
-      --bg: #f0f4f8;
-      --panel: #ffffff;
-      --primary: #2a6f97;
-      --me: #d0f0fd;
+      --bg: #f0f4f8;         /* 全局背景 */
+      --panel: #ffffff;       /* 面板(卡片/聊天框)顏色 */
+      --primary: #2a6f97;     /* 文字主色 */
+      --me: #d0f0fd;          /* 我方訊息泡泡 */
       --me-txt: #003f5c;
-      --other: #e2e2e2;
+      --other: #e2e2e2;       /* 他方訊息泡泡 */
     }
-    * { box-sizing: border-box; }
-    body {
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      padding: 10px;
-      background: var(--bg);
-    }
-    h2 { text-align: center; color: var(--primary); margin: .3em 0 0.6em; }
-
-    /* ===== AUTH ===== */
-    #auth-area { max-width: 420px; margin: 0 auto 20px; background: var(--panel); padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.1); display: flex; flex-direction: column; gap: 10px; }
-    #auth-area input { padding: 8px 12px; font-size: 1em; }
-    #auth-area button { padding: 8px 12px; font-size: 1em; cursor: pointer; }
-    #auth-msg { text-align: center; font-size: .9em; color: #c00; min-height: 1.2em; }
-
-    /* ===== MAIN UI (隱藏於未登入) ===== */
-    #main-ui { display: none; }
-
-    #status { text-align: center; margin-bottom: 5px; font-size: .9em; color: #333; }
-    #top-bar { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 10px; }
-    #top-controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    #chat-box {
-      border: 1px solid #ccc; padding: 10px; height: 50vh; overflow-y: scroll;
-      background: var(--panel); margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px;
-    }
-    .msg { max-width: 70%; padding: 8px 12px; border-radius: 10px; font-size: 1em; white-space: pre-wrap; word-wrap: break-word; }
-    .me    { align-self: flex-end; background: var(--me);    color: var(--me-txt); }
-    .other { align-self: flex-start; background: var(--other); color: #000; }
-    #input-area { display: flex; gap: 5px; }
-    #msg-input { flex: 1; padding: 8px; font-size: 1em; resize: vertical; min-height: 4em; max-height: 12em; overflow-y: auto; }
-    #send-btn { padding: 8px 12px; font-size: 1em; cursor: pointer; }
-    #send-btn::after { content: "📤"; margin-left: 6px; }
-
-    #settings { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    label { font-size: .9em; }
-
-    #user-info { font-size: .9em; text-align: center; margin-top: 2px; }
-    #danger-zone { margin-top: 10px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    #danger-zone button { background: #d9534f; color: #fff; border: none; border-radius: 5px; padding: 6px 10px; cursor: pointer; }
+    *{box-sizing:border-box;}
+    body{font-family:"Segoe UI",sans-serif;margin:0;padding:10px;background:var(--bg);transition:background .3s ease;}
+    h2{text-align:center;color:var(--primary);margin:.3em 0 .6em;user-select:none;}
+    /* AUTH */
+    #auth-area{max-width:420px;margin:0 auto 20px;background:var(--panel);padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.1);display:flex;flex-direction:column;gap:10px;}
+    #auth-area input{padding:8px 12px;font-size:1em;}
+    #auth-area button{padding:8px 12px;font-size:1em;cursor:pointer;}
+    #auth-msg{text-align:center;font-size:.9em;color:#c00;min-height:1.2em;}
+    /* MAIN UI */
+    #main-ui{display:none;}
+    #status{text-align:center;margin-bottom:5px;font-size:.9em;color:#333;}
+    #top-bar{display:flex;flex-direction:column;gap:10px;align-items:center;margin-bottom:10px;}
+    #chat-box{border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;background:var(--panel);margin-bottom:10px;display:flex;flex-direction:column;gap:5px;transition:background .3s ease;}
+    .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap;word-wrap:break-word;}
+    .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} .other{align-self:flex-start;background:var(--other);color:#000;}
+    #input-area{display:flex;gap:5px;} #msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;} #send-btn{padding:8px 12px;font-size:1em;cursor:pointer;} #send-btn::after{content:"📤";margin-left:6px;}
+    #settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+    label{font-size:.9em;}
+    #user-info{font-size:.9em;text-align:center;margin-top:2px;}
+    #danger-zone{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    #danger-zone button{background:#d9534f;color:#fff;border:none;border-radius:5px;padding:6px 10px;cursor:pointer;}
   </style>
 </head>
 <body>
@@ -72,20 +51,30 @@
   <div id="auth-area">
     <input id="auth-username" type="text" placeholder="使用者名稱" autocomplete="username" />
     <input id="auth-password" type="password" placeholder="密碼" autocomplete="current-password" />
-    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button id="login-btn">登入</button>
       <button id="register-btn">註冊</button>
     </div>
     <div id="auth-msg"></div>
   </div>
 
-  <!-- ===== MAIN UI (登入後顯示) ===== -->
+  <!-- ===== MAIN UI ===== -->
   <div id="main-ui">
     <div id="top-bar">
       <div id="status">尚未連接藍牙</div>
       <button id="connect-btn">連接 BLE</button>
       <div id="settings">
-        <label>選擇字體：
+        <label>主題：
+          <select id="theme-select">
+            <option value="default" data-bg="#f0f4f8" data-panel="#ffffff">經典淺色</option>
+            <option value="dark"    data-bg="#1e1e1e" data-panel="#2d2d2d">深色</option>
+            <option value="daisy"   data-bg="#fff9e6" data-panel="#ffffff">雛菊淡黃</option>
+            <option value="sky"     data-bg="#e7f3ff" data-panel="#ffffff">天空藍</option>
+            <option value="mint"    data-bg="#eaf7ea" data-panel="#ffffff">薄荷綠</option>
+          </select>
+        </label>
+        <label>自訂背景：<input type="color" id="bg-color" value="#f0f4f8"></label>
+        <label>字體：
           <select id="font-select">
             <option value="Segoe UI">Segoe UI</option>
             <option value="Arial">Arial</option>
@@ -94,7 +83,6 @@
             <option value="serif">Serif</option>
           </select>
         </label>
-        <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
       </div>
     </div>
 
@@ -113,184 +101,70 @@
   </div>
 
   <script>
-    // ===== CONSTANTS =====
-    const ACC_KEY   = "accounts";         // localStorage key for users array
-    const LOGIN_KEY = "loggedInUser";     // current session
-    const HISTORY_KEY = "lora-chat-history";
-    const INPUT_KEY   = "lora-chat-input";
+    /* ----------------- STORAGE KEYS ----------------- */
+    const ACC_KEY="accounts",LOGIN_KEY="loggedInUser",HISTORY_KEY="lora-chat-history",INPUT_KEY="lora-chat-input",THEME_KEY="lora-chat-theme";
 
-    // ===== DOM =====
-    const authArea   = document.getElementById("auth-area");
-    const usernameEl = document.getElementById("auth-username");
-    const passwordEl = document.getElementById("auth-password");
-    const loginBtn   = document.getElementById("login-btn");
-    const registerBtn= document.getElementById("register-btn");
-    const authMsg    = document.getElementById("auth-msg");
+    /* ----------------- DOM ----------------- */
+    const $=id=>document.getElementById(id);
+    const authArea=$("auth-area"),usernameEl=$("auth-username"),passwordEl=$("auth-password"),loginBtn=$("login-btn"),registerBtn=$("register-btn"),authMsg=$("auth-msg");
+    const mainUI=$("main-ui"),userInfo=$("user-info"),deleteBtn=$("delete-account-btn"),logoutBtn=$("logout-btn");
+    const chatBox=$("chat-box"),sendBtn=$("send-btn"),connectBtn=$("connect-btn"),msgInput=$("msg-input"),statusText=$("status"),fontSelect=$("font-select"),bgColorPicker=$("bg-color"),themeSelect=$("theme-select");
 
-    const mainUI     = document.getElementById("main-ui");
-    const userInfo   = document.getElementById("user-info");
-    const deleteBtn  = document.getElementById("delete-account-btn");
-    const logoutBtn  = document.getElementById("logout-btn");
+    /* ----------------- Helper ----------------- */
+    const hash=str=>sha256(str);
+    const loadJson=(k,def)=>JSON.parse(localStorage.getItem(k)||JSON.stringify(def));
+    const saveJson=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+    const loadStr=k=>localStorage.getItem(k);
+    const saveStr=(k,v)=>localStorage.setItem(k,v);
 
-    const chatBox    = document.getElementById("chat-box");
-    const sendBtn    = document.getElementById("send-btn");
-    const connectBtn = document.getElementById("connect-btn");
-    const msgInput   = document.getElementById("msg-input");
-    const statusText = document.getElementById("status");
-    const fontSelect = document.getElementById("font-select");
-    const bgColorPicker = document.getElementById("bg-color");
-
-    // ===== BLE vars =====
-    let bleDevice, bleServer, bleService, bleCharacteristicTX, bleCharacteristicRX;
-    let disconnectNotified = false;
-
-    // ===== Helper: load / save =====
-    function loadAccounts() {
-      return JSON.parse(localStorage.getItem(ACC_KEY) || "[]");
+    /* ----------------- THEME HANDLING ----------------- */
+    function applyTheme(themeId,bg,panel){
+      document.documentElement.style.setProperty("--bg",bg);
+      document.documentElement.style.setProperty("--panel",panel);
+      chatBox.style.backgroundColor="var(--panel)"; // ensure chat box sync when switching back from custom color
+      saveStr(THEME_KEY,themeId);
     }
-    function saveAccounts(arr) {
-      localStorage.setItem(ACC_KEY, JSON.stringify(arr));
-    }
-    function setLoggedIn(user) {
-      if (user) {
-        localStorage.setItem(LOGIN_KEY, user);
-      } else {
-        localStorage.removeItem(LOGIN_KEY);
-      }
-    }
-    function getLoggedIn() {
-      return localStorage.getItem(LOGIN_KEY);
-    }
-
-    // ===== AUTH Logic =====
-    function hash(str) { return sha256(str); }
-
-    function showAuth(msg="") {
-      authArea.style.display = "flex";
-      mainUI.style.display   = "none";
-      authMsg.textContent = msg;
-    }
-    function showMain(username) {
-      authArea.style.display = "none";
-      mainUI.style.display   = "block";
-      userInfo.textContent   = `使用者：${username}`;
-      loadHistory();
-      loadInput();
-    }
-
-    function register() {
-      const u = usernameEl.value.trim();
-      const p = passwordEl.value;
-      if (!u || !p) { authMsg.textContent = "請輸入帳號密碼"; return; }
-      const accounts = loadAccounts();
-      if (accounts.find(acc => acc.u === u)) { authMsg.textContent = "帳號已存在"; return; }
-      accounts.push({ u, h: hash(p) });
-      saveAccounts(accounts);
-      authMsg.textContent = "✅ 註冊成功，請登入";
-      usernameEl.value = passwordEl.value = "";
-    }
-
-    function login() {
-      const u = usernameEl.value.trim();
-      const p = passwordEl.value;
-      if (!u || !p) { authMsg.textContent = "請輸入帳號密碼"; return; }
-      const accounts = loadAccounts();
-      const acc = accounts.find(acc => acc.u === u);
-      if (!acc || acc.h !== hash(p)) {
-        authMsg.textContent = "帳號或密碼錯誤";
-        return;
-      }
-      setLoggedIn(u);
-      usernameEl.value = passwordEl.value = "";
-      showMain(u);
-    }
-
-    function logout() {
-      setLoggedIn(null);
-      showAuth();
-    }
-
-    function deleteAccount() {
-      if (!confirm("確定刪除帳號？此動作不可恢復！")) return;
-      const username = getLoggedIn();
-      const accounts = loadAccounts().filter(acc => acc.u !== username);
-      saveAccounts(accounts);
-      logout();
-    }
-
-    registerBtn.onclick = register;
-    loginBtn.onclick    = login;
-    logoutBtn.onclick   = logout;
-    deleteBtn.onclick   = deleteAccount;
-
-    // ===== Chat / BLE =====
-    function appendMsg(from, text) {
-      const div = document.createElement("div");
-      div.className = "msg " + (from === "你" ? "me" : "other");
-      div.textContent = text;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-      saveHistory();
-    }
-
-    function saveHistory() { localStorage.setItem(HISTORY_KEY, chatBox.innerHTML); }
-    function loadHistory() { const h = localStorage.getItem(HISTORY_KEY); if (h) chatBox.innerHTML = h; }
-    function saveInput()   { localStorage.setItem(INPUT_KEY, msgInput.value); }
-    function loadInput()   { const t = localStorage.getItem(INPUT_KEY); if (t) msgInput.value = t; }
-    msgInput.addEventListener("input", saveInput);
-
-    function mockReply(message) { setTimeout(() => appendMsg("ESP32 (模擬)", `收到「${message}」`), 1000); }
-
-    async function sendMessage() {
-      const msg = msgInput.value;
-      if (!msg.trim()) return;
-      appendMsg("你", msg);
-      msgInput.value = "";
-      saveInput();
-      if (bleCharacteristicTX) {
-        const encoder = new TextEncoder();
-        await bleCharacteristicTX.writeValue(encoder.encode(msg));
-      } else {
-        mockReply(msg);
-      }
-    }
-    sendBtn.onclick = sendMessage;
-    msgInput.addEventListener("keydown", e => {
-      const mobile = /Mobi|Android/i.test(navigator.userAgent);
-      if (e.key === "Enter" && !e.shiftKey && !mobile) { e.preventDefault(); sendMessage(); }
+    themeSelect.addEventListener("change",()=>{
+      const opt=themeSelect.selectedOptions[0];
+      applyTheme(opt.value,opt.dataset.bg,opt.dataset.panel);
+      bgColorPicker.value=opt.dataset.panel; // 同步顏色選取器 (以聊天框色為主)
+    });
+    bgColorPicker.addEventListener("input",()=>{
+      document.documentElement.style.setProperty("--panel",bgColorPicker.value);
+      chatBox.style.backgroundColor="var(--panel)";
+      themeSelect.value="custom";
     });
 
-    connectBtn.onclick = async () => {
-      try {
-        bleDevice = await navigator.bluetooth.requestDevice({ filters:[{namePrefix:"ESP32"}], optionalServices:["6e400001-b5a3-f393-e0a9-e50e24dcca9e"] });
-        bleDevice.addEventListener("gattserverdisconnected", () => { statusText.textContent = "❌ 藍牙已中斷"; if (!disconnectNotified) { appendMsg("系統", "⚠️ 藍牙已中斷連線"); disconnectNotified = true; } });
-        bleServer = await bleDevice.gatt.connect();
-        bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-        bleCharacteristicTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-        bleCharacteristicRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
-        await bleCharacteristicRX.startNotifications();
-        bleCharacteristicRX.addEventListener("characteristicvaluechanged", e => {
-          const decoder = new TextDecoder();
-          appendMsg("ESP32", decoder.decode(e.target.value));
-        });
-        statusText.textContent = "✅ 已連接 ESP32 BLE";
-        disconnectNotified = false;
-        appendMsg("系統", "✅ 已連接 ESP32 BLE");
-      } catch (err) {
-        console.error(err);
-        statusText.textContent = "❌ 藍牙連線失敗";
-        appendMsg("系統", "❌ BLE 連線失敗");
-      }
-    };
+    /* ----------------- AUTH ----------------- */
+    const loadAccounts=()=>loadJson(ACC_KEY,[]);
+    const saveAccounts=arr=>saveJson(ACC_KEY,arr);
+    const setLoggedIn=u=>u?saveStr(LOGIN_KEY,u):localStorage.removeItem(LOGIN_KEY);
+    const getLoggedIn=()=>loadStr(LOGIN_KEY);
 
-    fontSelect.addEventListener("change", () => { chatBox.style.fontFamily = msgInput.style.fontFamily = fontSelect.value; });
-    bgColorPicker.addEventListener("input", () => { chatBox.style.backgroundColor = bgColorPicker.value; });
+    function showAuth(msg=""){authArea.style.display="flex";mainUI.style.display="none";authMsg.textContent=msg;}
+    function showMain(u){authArea.style.display="none";mainUI.style.display="block";userInfo.textContent=`使用者：${u}`;loadHistory();loadInput();}
 
-    // ===== INIT =====
-    (function init() {
-      const user = getLoggedIn();
-      if (user) { showMain(user); } else { showAuth(); }
-    })();
+    function register(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const accs=loadAccounts();if(accs.some(a=>a.u===u)){authMsg.textContent="帳號已存在";return;}accs.push({u,h:hash(p)});saveAccounts(accs);authMsg.textContent="✅ 註冊成功，請登入";usernameEl.value=passwordEl.value="";}
+    function login(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const accs=loadAccounts(),acc=accs.find(a=>a.u===u);if(!acc||acc.h!==hash(p)){authMsg.textContent="帳號或密碼錯誤";return;}setLoggedIn(u);usernameEl.value=passwordEl.value="";showMain(u);}    
+    function logout(){setLoggedIn(null);showAuth();}
+    function deleteAccount(){if(!confirm("確定刪除帳號？此動作不可恢復！"))return;const u=getLoggedIn();saveAccounts(loadAccounts().filter(a=>a.u!==u));logout();}
+    registerBtn.onclick=register;loginBtn.onclick=login;logoutBtn.onclick=logout;deleteBtn.onclick=deleteAccount;
+
+    /* ----------------- CHAT ----------------- */
+    function appendMsg(from,text){const div=document.createElement("div");div.className="msg "+(from==="你"?"me":"other");div.textContent=text;chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;saveStr(HISTORY_KEY,chatBox.innerHTML);}    
+    msgInput.addEventListener("input",()=>saveStr(INPUT_KEY,msgInput.value));
+    function mockReply(m){setTimeout(()=>appendMsg("ESP32 (模擬)",`收到「${m}」`),1e3);}    
+    async function sendMessage(){const m=msgInput.value;if(!m.trim())return;appendMsg("你",m);msgInput.value="";saveStr(INPUT_KEY,"");if(window.bleCharacteristicTX){await bleCharacteristicTX.writeValue(new TextEncoder().encode(m));}else mockReply(m);}    
+    sendBtn.onclick=sendMessage;msgInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!/Mobi|Android/i.test(navigator.userAgent)){e.preventDefault();sendMessage();}});
+
+    /* ----------------- BLE (原邏輯略) ----------------- */
+    let bleDevice,bleServer,bleService,bleCharacteristicTX,bleCharacteristicRX,disconnectNotified=false;
+    connectBtn.onclick=async()=>{try{bleDevice=await navigator.bluetooth.requestDevice({filters:[{namePrefix:"ESP32"}],optionalServices:["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]});bleDevice.addEventListener("gattserverdisconnected",()=>{statusText.textContent="❌ 藍牙已中斷";if(!disconnectNotified){appendMsg("系統","⚠️ 藍牙已中斷連線");disconnectNotified=true;}});bleServer=await bleDevice.gatt.connect();bleService=await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");bleCharacteristicTX=await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");bleCharacteristicRX=await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");await bleCharacteristicRX.startNotifications();bleCharacteristicRX.addEventListener("characteristicvaluechanged",e=>appendMsg("ESP32",new TextDecoder().decode(e.target.value)));statusText.textContent="✅ 已連接 ESP32 BLE";disconnectNotified=false;appendMsg("系統","✅ 已連接 ESP32 BLE");}catch(err){console.error(err);statusText.textContent="❌ 藍牙連線失敗";appendMsg("系統","❌ BLE 連線失敗");}};
+    fontSelect.addEventListener("change",()=>{chatBox.style.fontFamily=msgInput.style.fontFamily=fontSelect.value;});
+
+    /* ----------------- INIT ----------------- */
+    (function(){const u=getLoggedIn();u?showMain(u):showAuth();const savedTheme=loadStr(THEME_KEY);if(savedTheme){themeSelect.value=savedTheme;themeSelect.dispatchEvent(new Event("change"));}})();
+    function loadHistory(){const h=loadStr(HISTORY_KEY);if(h)chatBox.innerHTML=h;} function loadInput(){const t=loadStr(INPUT_KEY);if(t)msgInput.value=t;}
   </script>
 </body>
 </html>
