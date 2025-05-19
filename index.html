@@ -53,6 +53,19 @@
     #user-label {
       font-weight: bold;
     }
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: #e0e0e0;
+      color: #000;
+      font-size: 0.9em;
+    }
+    body.dark-mode #top-bar {
+      background: #1f1f1f;
+      color: #fff;
+    }
     #settings-toggle {
       position: fixed;
       top: 10px;
@@ -65,13 +78,7 @@
       z-index: 101;
     }
     #rssi-indicator {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      font-size: 0.9em;
-      background: rgba(255,255,255,0.2);
-      padding: 4px 8px;
-      border-radius: 6px;
+      margin-right: 10px;
     }
     #content {
       display: flex;
@@ -104,7 +111,7 @@
     #chat-box {
       border: 1px solid #ccc;
       padding: 10px;
-      height: calc(100vh - 210px);
+      height: calc(100vh - 240px);
       overflow-y: scroll;
       background: #ffffff;
       display: flex;
@@ -163,9 +170,13 @@
   <div id="layout">
     <header>
       <span id="user-label"></span>
+      <button id="connect-btn">連接 BLE</button>
     </header>
+    <div id="top-bar">
+      <span id="rssi-indicator">📶 RSSI: - dBm</span>
+      <span id="stats">已傳送：0｜成功：0｜失敗：0｜重送：0</span>
+    </div>
     <button id="settings-toggle">⚙️</button>
-    <div id="rssi-indicator">📶 RSSI: - dBm</div>
     <div id="content">
       <main>
         <div id="status">尚未連接藍牙</div>
@@ -174,13 +185,9 @@
           <textarea id="msg-input" placeholder="輸入訊息..." rows="2"></textarea>
           <button id="send-btn">傳送</button>
         </div>
-        <div id="stats" style="margin-top: 10px; font-size: 0.9em; color: #444;">
-          已傳送：0｜成功：0｜失敗：0｜重送：0
-        </div>
       </main>
       <aside id="settings-panel">
         <h3>設定 ⚙</h3>
-        <button id="connect-btn">連接 BLE</button>
         <button id="gen-key-btn">產生金鑰對</button>
         <button id="export-key-btn">匯出金鑰</button>
         <input type="file" id="import-key-file" style="display: none">
@@ -231,6 +238,9 @@
     const toggleBtn = document.getElementById('settings-toggle');
     const panel = document.getElementById('settings-panel');
     const rssiText = document.getElementById('rssi-indicator');
+    const statsBar = document.getElementById('stats');
+
+    let stats = { sent: 0, success: 0, fail: 0, retry: 0 };
 
     toggleBtn.onclick = () => {
       panel.classList.toggle('show');
@@ -244,15 +254,23 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    function updateStats(type) {
+      stats[type]++;
+      statsBar.textContent = `已傳送：${stats.sent}｜成功：${stats.success}｜失敗：${stats.fail}｜重送：${stats.retry}`;
+    }
+
     sendBtn.onclick = () => {
       const msg = msgInput.value.trim();
       if (!msg) return;
       appendMsg(username, msg);
       msgInput.value = "";
+      updateStats('sent');
     };
 
     testBtn.onclick = () => {
-      appendMsg("ESP32", "📦 模擬封包：LoRa 測試訊息\n📶 RSSI: -" + Math.floor(Math.random()*40 + 60) + " dBm");
+      const fakeRssi = -Math.floor(Math.random() * 40 + 60);
+      appendMsg("ESP32", `📦 模擬封包：LoRa 測試訊息\n📶 RSSI: ${fakeRssi} dBm`);
+      updateStats('success');
     };
 
     fontSelect.onchange = () => {
@@ -274,7 +292,6 @@
       document.body.classList.toggle('dark-mode', darkToggle.checked);
     };
 
-    // RSSI 模擬變化
     setInterval(() => {
       const rssi = -Math.floor(Math.random() * 30 + 50);
       const bars = rssi > -60 ? "📶📶📶📶" : rssi > -70 ? "📶📶📶" : rssi > -80 ? "📶📶" : "📶";
