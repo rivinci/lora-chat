@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,29 +18,15 @@
       margin: 0;
       padding: 10px;
       background-color: #f0f4f8;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
     }
     h2 {
       text-align: center;
       color: #2a6f97;
-    }
-    #status {
-      text-align: center;
-      margin-bottom: 5px;
-      font-size: 0.9em;
-      color: #333;
-    }
-    #top-bar {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    #top-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
     }
     #chat-box {
       border: 1px solid #ccc;
@@ -52,6 +38,11 @@
       display: flex;
       flex-direction: column;
       gap: 5px;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode #chat-box {
+      background: #1e1e1e;
+      color: #fff;
     }
     .msg {
       max-width: 70%;
@@ -109,19 +100,6 @@
     label {
       font-size: 0.9em;
     }
-    table.comparison {
-      margin: 0 auto 20px;
-      border-collapse: collapse;
-      font-size: 0.9em;
-    }
-    table.comparison th, table.comparison td {
-      border: 1px solid #999;
-      padding: 6px 12px;
-      text-align: center;
-    }
-    table.comparison th {
-      background-color: #e0e0e0;
-    }
   </style>
 </head>
 <body>
@@ -133,10 +111,8 @@
       <button id="gen-key-btn">🔑 產生金鑰對</button>
       <button id="export-key-btn">⬇️ 匯出金鑰</button>
       <input type="file" id="import-key-file" style="display: none">
-      <label style="margin-left: 10px;">
-        <input type="checkbox" id="anon-mode"> 匿名模式
-      </label>
-      <label style="margin-left: 10px;">驗證模式：
+      <label><input type="checkbox" id="anon-mode"> 匿名模式</label>
+      <label>驗證模式：
         <select id="mode-select">
           <option value="full">每封驗簽</option>
           <option value="cache">快取模式</option>
@@ -155,73 +131,31 @@
         </select>
       </label>
       <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
+      <label><input type="checkbox" id="dark-toggle"> 深色模式</label>
     </div>
     <div id="extras" style="margin-top: 10px; text-align: center;">
       <label><input type="checkbox" id="debug-toggle"> 顯示封包原文</label>
-      <label style="margin-left: 10px;">重送次數：
-        <input type="number" id="retry-count" min="0" max="5" value="0" style="width: 40px;">
-      </label>
-      <button id="export-log-btn" style="margin-left: 10px;">⬇️ 匯出聊天紀錄</button>
+      <label>重送次數：<input type="number" id="retry-count" min="0" max="5" value="0" style="width: 40px;"></label>
+      <button id="export-log-btn">⬇️ 匯出聊天紀錄</button>
+      <button id="test-msg-btn">🧪 插入模擬封包</button>
     </div>
-    <div id="stats" style="margin: 10px auto; text-align: center; font-size: 0.9em; color: #444;">
+    <div id="stats" style="margin-top: 10px; text-align: center; font-size: 0.9em; color: #444;">
       已傳送：0｜成功：0｜失敗：0｜重送：0
     </div>
   </div>
-
-  <!-- 插入比較表格 -->
-  <table class="comparison">
-    <thead>
-      <tr>
-        <th>設定方式</th>
-        <th>上方集中區塊</th>
-        <th>右滑設定面板（⚙）</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>深色模式</td>
-        <td>❌ 無</td>
-        <td>✅ 支援 dark-mode 切換</td>
-      </tr>
-      <tr>
-        <td>測試訊息功能</td>
-        <td>❌ 無</td>
-        <td>✅ 插入 ESP32 模擬封包</td>
-      </tr>
-      <tr>
-        <td>外觀結構</td>
-        <td>比較緊湊（集中）</td>
-        <td>側欄式、移動設備操作更佳</td>
-      </tr>
-      <tr>
-        <td>可讀性與模組化</td>
-        <td>✅ 好</td>
-        <td>✅ 更模組化（可拓展）</td>
-      </tr>
-    </tbody>
-  </table>
-
   <div id="chat-box"></div>
   <div id="input-area">
     <textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea>
     <button id="send-btn">傳送</button>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl/nacl.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util/nacl-util.min.js"></script>
   <script>
     const chatBox = document.getElementById('chat-box');
-    const sendBtn = document.getElementById('send-btn');
-    const connectBtn = document.getElementById('connect-btn');
     const msgInput = document.getElementById('msg-input');
-    const statusText = document.getElementById('status');
     const fontSelect = document.getElementById('font-select');
     const bgColorPicker = document.getElementById('bg-color');
-    const retryInput = document.getElementById('retry-count');
-
-    let bleDevice, bleServer, bleService, bleCharacteristicTX, bleCharacteristicRX, disconnectNotified = false;
-    let keyPair;
-    let stats = { sent: 0, success: 0, fail: 0, retry: 0 };
+    const darkToggle = document.getElementById('dark-toggle');
+    const sendBtn = document.getElementById('send-btn');
+    const testBtn = document.getElementById('test-msg-btn');
 
     function appendMsg(from, text) {
       const div = document.createElement('div');
@@ -231,135 +165,29 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function updateStats(type) {
-      stats[type]++;
-      document.getElementById("stats").textContent =
-        `已傳送：${stats.sent}｜成功：${stats.success}｜失敗：${stats.fail}｜重送：${stats.retry}`;
-    }
-
-    async function preparePayload(msg) {
-      const anon = document.getElementById("anon-mode").checked;
-      const mode = document.getElementById("mode-select").value;
-      let payload = `:mode=${mode}\n`;
-      if (anon) {
-        const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
-        const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-        payload += `:anon ${hex}`;
-      } else {
-        const priv = nacl.util.decodeBase64(localStorage.getItem("key-priv"));
-        const signature = nacl.sign.detached(nacl.util.decodeUTF8(msg), priv);
-        const sigBase64 = nacl.util.encodeBase64(signature);
-        const pubBase64 = localStorage.getItem("key-pub");
-        payload += `:pub ${pubBase64}\n:sig ${sigBase64}\n:msg ${msg}`;
-      }
-      return payload;
-    }
-
-    async function sendMessage(retry = 0) {
+    sendBtn.onclick = () => {
       const msg = msgInput.value.trim();
       if (!msg) return;
       appendMsg("你", msg);
       msgInput.value = "";
-      stats.sent++;
-      try {
-        const payload = await preparePayload(msg);
-        const encoder = new TextEncoder();
-        await bleCharacteristicTX.writeValue(encoder.encode(payload));
-        updateStats('success');
-      } catch (err) {
-        if (retry < parseInt(retryInput.value || "0")) {
-          updateStats('retry');
-          setTimeout(() => sendMessage(retry + 1), 500);
-        } else {
-          updateStats('fail');
-          appendMsg("系統", "❌ 封包傳送失敗");
-        }
-      }
-    }
-
-    sendBtn.onclick = () => sendMessage();
-
-    connectBtn.onclick = async () => {
-      try {
-        bleDevice = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'ESP32' }],
-          optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
-        });
-        bleDevice.addEventListener('gattserverdisconnected', () => {
-          statusText.textContent = "❌ 藍牙已中斷";
-          if (!disconnectNotified) {
-            appendMsg("系統", "⚠️ 藍牙已中斷連線");
-            disconnectNotified = true;
-          }
-        });
-        bleServer = await bleDevice.gatt.connect();
-        bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-        bleCharacteristicTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-        bleCharacteristicRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
-        await bleCharacteristicRX.startNotifications();
-        bleCharacteristicRX.addEventListener('characteristicvaluechanged', event => {
-          const value = new TextDecoder().decode(event.target.value);
-          const lines = value.split('\n');
-          let display = "", rssi = null;
-          for (let line of lines) {
-            if (line.startsWith(":msg")) display = line.replace(":msg", "").trim();
-            else if (line.startsWith(":rssi")) rssi = line.replace(":rssi", "").trim();
-          }
-          if (rssi) display += `\n📶 RSSI: ${rssi} dBm`;
-          appendMsg("ESP32", display);
-          if (document.getElementById("debug-toggle").checked) {
-            appendMsg("封包", value);
-          }
-        });
-        await bleCharacteristicTX.writeValue(new TextEncoder().encode(":subscribed"));
-        statusText.textContent = "✅ 已連接 ESP32 BLE";
-        disconnectNotified = false;
-        appendMsg("系統", "✅ 已連接 ESP32 BLE");
-      } catch (err) {
-        console.error(err);
-        statusText.textContent = "❌ 藍牙連線失敗";
-        appendMsg("系統", "❌ BLE 連線失敗");
-      }
     };
 
-    document.getElementById("gen-key-btn").onclick = () => {
-      keyPair = nacl.sign.keyPair();
-      const pub = nacl.util.encodeBase64(keyPair.publicKey);
-      const priv = nacl.util.encodeBase64(keyPair.secretKey);
-      localStorage.setItem("key-pub", pub);
-      localStorage.setItem("key-priv", priv);
-      alert("🔐 金鑰產生完成");
+    testBtn.onclick = () => {
+      appendMsg("ESP32", "📦 模擬封包：LoRa 測試訊息\n📶 RSSI: -67 dBm");
     };
 
-    document.getElementById("export-key-btn").onclick = () => {
-      const keyData = {
-        pub: localStorage.getItem("key-pub"),
-        priv: localStorage.getItem("key-priv")
-      };
-      const blob = new Blob([JSON.stringify(keyData, null, 2)], { type: "application/json" });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = "keypair.json";
-      link.click();
-    };
-
-    document.getElementById("export-log-btn").onclick = () => {
-      const logs = Array.from(document.querySelectorAll('#chat-box .msg')).map(msg => msg.textContent);
-      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = "chat-history.json";
-      link.click();
-    };
-
-    fontSelect.addEventListener('change', () => {
+    fontSelect.onchange = () => {
       chatBox.style.fontFamily = fontSelect.value;
       msgInput.style.fontFamily = fontSelect.value;
-    });
+    };
 
-    bgColorPicker.addEventListener('input', () => {
+    bgColorPicker.oninput = () => {
       chatBox.style.backgroundColor = bgColorPicker.value;
-    });
+    };
+
+    darkToggle.onchange = () => {
+      document.body.classList.toggle('dark-mode', darkToggle.checked);
+    };
   </script>
 </body>
 </html>
