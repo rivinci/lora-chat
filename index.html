@@ -13,36 +13,63 @@
     }
   </script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: "Segoe UI", sans-serif;
       margin: 0;
-      padding: 0;
       background-color: #f0f4f8;
       transition: background-color 0.3s, color 0.3s;
-      display: flex;
     }
     body.dark-mode {
       background-color: #121212;
       color: #e0e0e0;
     }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background-color: #2a6f97;
+      color: #fff;
+    }
+    #settings-toggle {
+      font-size: 1.2em;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+    }
+    #layout {
+      display: flex;
+      height: calc(100vh - 50px);
+    }
     aside {
-      width: 250px;
+      width: 260px;
       padding: 20px;
       background-color: #eaeaea;
-      border-right: 1px solid #ccc;
-      height: 100vh;
-      box-sizing: border-box;
+      border-left: 1px solid #ccc;
+      transition: transform 0.3s ease;
+      transform: translateX(100%);
+      position: fixed;
+      top: 50px;
+      right: 0;
+      height: calc(100vh - 50px);
+      overflow-y: auto;
+      z-index: 100;
+    }
+    aside.show {
+      transform: translateX(0);
     }
     body.dark-mode aside {
       background-color: #1f1f1f;
+      color: #fff;
     }
     main {
       flex: 1;
       padding: 10px;
-    }
-    h2 {
-      text-align: center;
-      color: #2a6f97;
+      overflow-y: auto;
     }
     #chat-box {
       border: 1px solid #ccc;
@@ -54,7 +81,6 @@
       display: flex;
       flex-direction: column;
       gap: 5px;
-      transition: background 0.3s, color 0.3s;
     }
     body.dark-mode #chat-box {
       background: #1e1e1e;
@@ -111,7 +137,7 @@
       display: block;
       margin-bottom: 6px;
     }
-    select, input[type="color"], input[type="number"] {
+    aside select, aside input[type="color"], aside input[type="number"] {
       width: 100%;
       margin-bottom: 10px;
     }
@@ -122,48 +148,53 @@
   </style>
 </head>
 <body>
-  <aside>
-    <h3>設定面板 ⚙</h3>
-    <button id="connect-btn">連接 BLE</button>
-    <button id="gen-key-btn">🔑 產生金鑰對</button>
-    <button id="export-key-btn">⬇️ 匯出金鑰</button>
-    <input type="file" id="import-key-file" style="display: none">
-    <label><input type="checkbox" id="anon-mode"> 匿名模式</label>
-    <label>驗證模式：
-      <select id="mode-select">
-        <option value="full">每封驗簽</option>
-        <option value="cache">快取模式</option>
-        <option value="session">Session 模式</option>
-      </select>
-    </label>
-    <label>選擇字體：
-      <select id="font-select">
-        <option value="Segoe UI">Segoe UI</option>
-        <option value="Arial">Arial</option>
-        <option value="Courier New">Courier New</option>
-        <option value="Noto Sans TC">Noto Sans TC</option>
-        <option value="serif">Serif</option>
-      </select>
-    </label>
-    <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
-    <label><input type="checkbox" id="dark-toggle"> 深色模式</label>
-    <label><input type="checkbox" id="debug-toggle"> 顯示封包原文</label>
-    <label>重送次數：<input type="number" id="retry-count" min="0" max="5" value="0"></label>
-    <button id="export-log-btn">⬇️ 匯出聊天紀錄</button>
-    <button id="test-msg-btn">🧪 插入模擬封包</button>
-  </aside>
-  <main>
+  <header>
     <h2>LoRa Chat (Web UI)</h2>
-    <div id="status">尚未連接藍牙</div>
-    <div id="chat-box"></div>
-    <div id="input-area">
-      <textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea>
-      <button id="send-btn">傳送</button>
-    </div>
-    <div id="stats" style="margin-top: 10px; text-align: center; font-size: 0.9em; color: #444;">
-      已傳送：0｜成功：0｜失敗：0｜重送：0
-    </div>
-  </main>
+    <button id="settings-toggle">⚙️</button>
+  </header>
+  <div id="layout">
+    <main>
+      <div id="status">尚未連接藍牙</div>
+      <div id="chat-box"></div>
+      <div id="input-area">
+        <textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea>
+        <button id="send-btn">傳送</button>
+      </div>
+      <div id="stats" style="margin-top: 10px; text-align: center; font-size: 0.9em; color: #444;">
+        已傳送：0｜成功：0｜失敗：0｜重送：0
+      </div>
+    </main>
+    <aside id="settings-panel">
+      <h3>設定面板 ⚙</h3>
+      <button id="connect-btn">連接 BLE</button>
+      <button id="gen-key-btn">🔑 產生金鑰對</button>
+      <button id="export-key-btn">⬇️ 匯出金鑰</button>
+      <input type="file" id="import-key-file" style="display: none">
+      <label><input type="checkbox" id="anon-mode"> 匿名模式</label>
+      <label>驗證模式：
+        <select id="mode-select">
+          <option value="full">每封驗簽</option>
+          <option value="cache">快取模式</option>
+          <option value="session">Session 模式</option>
+        </select>
+      </label>
+      <label>選擇字體：
+        <select id="font-select">
+          <option value="Segoe UI">Segoe UI</option>
+          <option value="Arial">Arial</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Noto Sans TC">Noto Sans TC</option>
+          <option value="serif">Serif</option>
+        </select>
+      </label>
+      <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
+      <label><input type="checkbox" id="dark-toggle"> 深色模式</label>
+      <label><input type="checkbox" id="debug-toggle"> 顯示封包原文</label>
+      <label>重送次數：<input type="number" id="retry-count" min="0" max="5" value="0"></label>
+      <button id="export-log-btn">⬇️ 匯出聊天紀錄</button>
+      <button id="test-msg-btn">🧪 插入模擬封包</button>
+    </aside>
+  </div>
   <script>
     const chatBox = document.getElementById('chat-box');
     const msgInput = document.getElementById('msg-input');
@@ -172,6 +203,12 @@
     const darkToggle = document.getElementById('dark-toggle');
     const sendBtn = document.getElementById('send-btn');
     const testBtn = document.getElementById('test-msg-btn');
+    const toggleBtn = document.getElementById('settings-toggle');
+    const panel = document.getElementById('settings-panel');
+
+    toggleBtn.onclick = () => {
+      panel.classList.toggle('show');
+    };
 
     function appendMsg(from, text) {
       const div = document.createElement('div');
