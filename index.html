@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoRa Chat UI</title>
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body, html {
       margin: 0;
       height: 100%;
@@ -77,14 +76,8 @@
       cursor: pointer;
       z-index: 101;
     }
-    #rssi-indicator {
-      margin-right: 10px;
-    }
-    #content {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
+    #rssi-indicator { margin-right: 10px; }
+    #content { display: flex; flex: 1; overflow: hidden; }
     aside {
       width: 260px;
       padding: 20px;
@@ -99,9 +92,7 @@
       overflow-y: auto;
       z-index: 100;
     }
-    aside.show {
-      transform: translateX(0);
-    }
+    aside.show { transform: translateX(0); }
     main {
       flex: 1;
       padding: 10px;
@@ -129,35 +120,12 @@
       font-size: 1em;
       white-space: pre-wrap;
     }
-    .me {
-      align-self: flex-end;
-      background-color: #d0f0fd;
-      color: #003f5c;
-    }
-    .other {
-      align-self: flex-start;
-      background-color: #e2e2e2;
-      color: #000;
-    }
-    #input-area {
-      display: flex;
-      flex-direction: row;
-      gap: 5px;
-      margin-top: 10px;
-    }
-    #msg-input {
-      flex: 1;
-      padding: 8px;
-      font-size: 1em;
-    }
-    #send-btn {
-      padding: 8px 12px;
-      font-size: 1em;
-    }
-    aside label, aside button {
-      display: block;
-      margin: 8px 0;
-    }
+    .me { align-self: flex-end; background-color: #d0f0fd; color: #003f5c; }
+    .other { align-self: flex-start; background-color: #e2e2e2; color: #000; }
+    #input-area { display: flex; flex-direction: row; gap: 5px; margin-top: 10px; }
+    #msg-input { flex: 1; padding: 8px; font-size: 1em; }
+    #send-btn { padding: 8px 12px; font-size: 1em; }
+    aside label, aside button { display: block; margin: 8px 0; }
   </style>
 </head>
 <body>
@@ -166,6 +134,8 @@
     <input type="text" id="username" placeholder="使用者名稱">
     <input type="password" id="password" placeholder="密碼">
     <button onclick="login()">登入</button>
+    <button onclick="register()">註冊新帳號</button>
+    <button onclick="deleteAccount()">🗑️ 刪除帳號</button>
   </div>
   <div id="layout">
     <header>
@@ -215,88 +185,55 @@
   <script>
     let username = "";
 
+    function getAccounts() {
+      return JSON.parse(localStorage.getItem("accounts") || "{}");
+    }
+
     function login() {
-      const nameInput = document.getElementById('username').value.trim();
-      const passInput = document.getElementById('password').value.trim();
-      if (nameInput && passInput) {
-        username = nameInput;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('layout').style.display = 'flex';
-        document.getElementById('user-label').textContent = `使用者：${username}`;
+      const name = document.getElementById('username').value.trim();
+      const pwd = document.getElementById('password').value.trim();
+      const hash = sha256(pwd);
+      const accounts = getAccounts();
+      if (!accounts[name]) return alert("❌ 此帳號尚未註冊");
+      if (accounts[name] !== hash) return alert("❌ 密碼錯誤");
+      username = name;
+      localStorage.setItem("loggedInUser", name);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('layout').style.display = 'flex';
+      document.getElementById('user-label').textContent = `使用者：${username}`;
+    }
+
+    function register() {
+      const name = document.getElementById('username').value.trim();
+      const pwd = document.getElementById('password').value.trim();
+      if (!name || !pwd) return alert("請填寫帳號與密碼");
+      const accounts = getAccounts();
+      accounts[name] = sha256(pwd);
+      localStorage.setItem("accounts", JSON.stringify(accounts));
+      alert("✅ 註冊成功，請重新登入");
+    }
+
+    function deleteAccount() {
+      const name = document.getElementById('username').value.trim();
+      const accounts = getAccounts();
+      if (accounts[name]) {
+        delete accounts[name];
+        localStorage.setItem("accounts", JSON.stringify(accounts));
+        alert("✅ 已刪除帳號");
       } else {
-        alert("請輸入帳號與密碼");
+        alert("❌ 此帳號不存在");
       }
     }
 
-    const chatBox = document.getElementById('chat-box');
-    const msgInput = document.getElementById('msg-input');
-    const fontSelect = document.getElementById('font-select');
-    const bgColorPicker = document.getElementById('bg-color');
-    const darkToggle = document.getElementById('dark-toggle');
-    const sendBtn = document.getElementById('send-btn');
-    const testBtn = document.getElementById('test-msg-btn');
-    const toggleBtn = document.getElementById('settings-toggle');
-    const panel = document.getElementById('settings-panel');
-    const rssiText = document.getElementById('rssi-indicator');
-    const statsBar = document.getElementById('stats');
-
-    let stats = { sent: 0, success: 0, fail: 0, retry: 0 };
-
-    toggleBtn.onclick = () => {
-      panel.classList.toggle('show');
+    window.onload = () => {
+      const savedUser = localStorage.getItem("loggedInUser");
+      if (savedUser && getAccounts()[savedUser]) {
+        username = savedUser;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('layout').style.display = 'flex';
+        document.getElementById('user-label').textContent = `使用者：${username}`;
+      }
     };
-
-    function appendMsg(from, text) {
-      const div = document.createElement('div');
-      div.className = 'msg ' + (from === username ? 'me' : 'other');
-      div.textContent = text;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function updateStats(type) {
-      stats[type]++;
-      statsBar.textContent = `已傳送：${stats.sent}｜成功：${stats.success}｜失敗：${stats.fail}｜重送：${stats.retry}`;
-    }
-
-    sendBtn.onclick = () => {
-      const msg = msgInput.value.trim();
-      if (!msg) return;
-      appendMsg(username, msg);
-      msgInput.value = "";
-      updateStats('sent');
-    };
-
-    testBtn.onclick = () => {
-      const fakeRssi = -Math.floor(Math.random() * 40 + 60);
-      appendMsg("ESP32", `📦 模擬封包：LoRa 測試訊息\n📶 RSSI: ${fakeRssi} dBm`);
-      updateStats('success');
-    };
-
-    fontSelect.onchange = () => {
-      chatBox.style.fontFamily = fontSelect.value;
-      msgInput.style.fontFamily = fontSelect.value;
-    };
-
-    bgColorPicker.oninput = () => {
-      const color = bgColorPicker.value;
-      chatBox.style.backgroundColor = color;
-      const rgb = parseInt(color.substring(1), 16);
-      const r = (rgb >> 16) & 0xff, g = (rgb >> 8) & 0xff, b = rgb & 0xff;
-      const brightness = 0.299*r + 0.587*g + 0.114*b;
-      if (brightness < 128) document.body.classList.add('dark-mode');
-      else document.body.classList.remove('dark-mode');
-    };
-
-    darkToggle.onchange = () => {
-      document.body.classList.toggle('dark-mode', darkToggle.checked);
-    };
-
-    setInterval(() => {
-      const rssi = -Math.floor(Math.random() * 30 + 50);
-      const bars = rssi > -60 ? "📶📶📶📶" : rssi > -70 ? "📶📶📶" : rssi > -80 ? "📶📶" : "📶";
-      rssiText.textContent = `${bars} RSSI: ${rssi} dBm`;
-    }, 4000);
   </script>
 </body>
 </html>
