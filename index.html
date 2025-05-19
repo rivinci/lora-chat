@@ -5,26 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoRa Chat UI</title>
   <link rel="manifest" href="manifest.json">
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log("✅ Service Worker 註冊成功"))
-        .catch(err => console.error("❌ Service Worker 註冊失敗:", err));
-    }
-  </script>
   <style>
     * {
       box-sizing: border-box;
     }
-    body {
-      font-family: "Segoe UI", sans-serif;
+    body, html {
       margin: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
       background-color: #f0f4f8;
       transition: background-color 0.3s, color 0.3s;
     }
     body.dark-mode {
       background-color: #121212;
       color: #e0e0e0;
+    }
+    #login-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 999;
+    }
+    #login-screen input {
+      padding: 8px;
+      margin: 5px;
+      font-size: 1em;
+    }
+    #layout {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
     }
     header {
       display: flex;
@@ -33,17 +48,35 @@
       padding: 10px 16px;
       background-color: #2a6f97;
       color: #fff;
+      position: relative;
+    }
+    #user-label {
+      font-weight: bold;
     }
     #settings-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
       font-size: 1.2em;
       background: none;
       border: none;
       color: #fff;
       cursor: pointer;
+      z-index: 101;
     }
-    #layout {
+    #rssi-indicator {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 0.9em;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    #content {
       display: flex;
-      height: calc(100vh - 50px);
+      flex: 1;
+      overflow: hidden;
     }
     aside {
       width: 260px;
@@ -62,22 +95,18 @@
     aside.show {
       transform: translateX(0);
     }
-    body.dark-mode aside {
-      background-color: #1f1f1f;
-      color: #fff;
-    }
     main {
       flex: 1;
       padding: 10px;
       overflow-y: auto;
+      margin-top: 50px;
     }
     #chat-box {
       border: 1px solid #ccc;
       padding: 10px;
-      height: 50vh;
+      height: calc(100vh - 210px);
       overflow-y: scroll;
       background: #ffffff;
-      margin-bottom: 10px;
       display: flex;
       flex-direction: column;
       gap: 5px;
@@ -92,7 +121,6 @@
       border-radius: 10px;
       font-size: 1em;
       white-space: pre-wrap;
-      word-wrap: break-word;
     }
     .me {
       align-self: flex-end;
@@ -106,96 +134,93 @@
     }
     #input-area {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 5px;
-    }
-    @media (min-width: 600px) {
-      #input-area {
-        flex-direction: row;
-      }
+      margin-top: 10px;
     }
     #msg-input {
       flex: 1;
       padding: 8px;
       font-size: 1em;
-      resize: vertical;
-      min-height: 4em;
-      max-height: 12em;
-      overflow-y: auto;
-      width: 100%;
     }
     #send-btn {
       padding: 8px 12px;
       font-size: 1em;
     }
-    #send-btn::after {
-      content: "\1f4e4";
-      margin-left: 6px;
-    }
-    label {
-      font-size: 0.9em;
+    aside label, aside button {
       display: block;
-      margin-bottom: 6px;
-    }
-    aside select, aside input[type="color"], aside input[type="number"] {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    aside button {
-      margin: 6px 0;
-      width: 100%;
+      margin: 8px 0;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h2>LoRa Chat (Web UI)</h2>
-    <button id="settings-toggle">⚙️</button>
-  </header>
+  <div id="login-screen">
+    <h2>登入 LoRa Chat</h2>
+    <input type="text" id="username" placeholder="使用者名稱">
+    <input type="password" id="password" placeholder="密碼">
+    <button onclick="login()">登入</button>
+  </div>
   <div id="layout">
-    <main>
-      <div id="status">尚未連接藍牙</div>
-      <div id="chat-box"></div>
-      <div id="input-area">
-        <textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea>
-        <button id="send-btn">傳送</button>
-      </div>
-      <div id="stats" style="margin-top: 10px; text-align: center; font-size: 0.9em; color: #444;">
-        已傳送：0｜成功：0｜失敗：0｜重送：0
-      </div>
-    </main>
-    <aside id="settings-panel">
-      <h3>設定面板 ⚙</h3>
-      <button id="connect-btn">連接 BLE</button>
-      <button id="gen-key-btn">🔑 產生金鑰對</button>
-      <button id="export-key-btn">⬇️ 匯出金鑰</button>
-      <input type="file" id="import-key-file" style="display: none">
-      <label><input type="checkbox" id="anon-mode"> 匿名模式</label>
-      <label>驗證模式：
-        <select id="mode-select">
+    <header>
+      <span id="user-label"></span>
+    </header>
+    <button id="settings-toggle">⚙️</button>
+    <div id="rssi-indicator">📶 RSSI: - dBm</div>
+    <div id="content">
+      <main>
+        <div id="status">尚未連接藍牙</div>
+        <div id="chat-box"></div>
+        <div id="input-area">
+          <textarea id="msg-input" placeholder="輸入訊息..." rows="2"></textarea>
+          <button id="send-btn">傳送</button>
+        </div>
+        <div id="stats" style="margin-top: 10px; font-size: 0.9em; color: #444;">
+          已傳送：0｜成功：0｜失敗：0｜重送：0
+        </div>
+      </main>
+      <aside id="settings-panel">
+        <h3>設定 ⚙</h3>
+        <button id="connect-btn">連接 BLE</button>
+        <button id="gen-key-btn">產生金鑰對</button>
+        <button id="export-key-btn">匯出金鑰</button>
+        <input type="file" id="import-key-file" style="display: none">
+        <label><input type="checkbox" id="anon-mode"> 匿名模式</label>
+        <label>驗證模式：<select id="mode-select">
           <option value="full">每封驗簽</option>
           <option value="cache">快取模式</option>
           <option value="session">Session 模式</option>
-        </select>
-      </label>
-      <label>選擇字體：
-        <select id="font-select">
+        </select></label>
+        <label>選擇字體：<select id="font-select">
           <option value="Segoe UI">Segoe UI</option>
           <option value="Arial">Arial</option>
           <option value="Courier New">Courier New</option>
           <option value="Noto Sans TC">Noto Sans TC</option>
-          <option value="serif">Serif</option>
-        </select>
-      </label>
-      <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
-      <label><input type="checkbox" id="dark-toggle"> 深色模式</label>
-      <label><input type="checkbox" id="debug-toggle"> 顯示封包原文</label>
-      <label>重送次數：<input type="number" id="retry-count" min="0" max="5" value="0"></label>
-      <button id="export-log-btn">⬇️ 匯出聊天紀錄</button>
-      <button id="test-msg-btn">🧪 插入模擬封包</button>
-    </aside>
+        </select></label>
+        <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
+        <label><input type="checkbox" id="dark-toggle"> 深色模式</label>
+        <label><input type="checkbox" id="debug-toggle"> 顯示封包原文</label>
+        <label>重送次數：<input type="number" id="retry-count" min="0" max="5" value="0"></label>
+        <button id="export-log-btn">匯出聊天紀錄</button>
+        <button id="test-msg-btn">模擬封包</button>
+      </aside>
+    </div>
   </div>
   <script>
+    let username = "";
+
+    function login() {
+      const nameInput = document.getElementById('username').value.trim();
+      const passInput = document.getElementById('password').value.trim();
+      if (nameInput && passInput) {
+        username = nameInput;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('layout').style.display = 'flex';
+        document.getElementById('user-label').textContent = `使用者：${username}`;
+      } else {
+        alert("請輸入帳號與密碼");
+      }
+    }
+
     const chatBox = document.getElementById('chat-box');
     const msgInput = document.getElementById('msg-input');
     const fontSelect = document.getElementById('font-select');
@@ -205,6 +230,7 @@
     const testBtn = document.getElementById('test-msg-btn');
     const toggleBtn = document.getElementById('settings-toggle');
     const panel = document.getElementById('settings-panel');
+    const rssiText = document.getElementById('rssi-indicator');
 
     toggleBtn.onclick = () => {
       panel.classList.toggle('show');
@@ -212,7 +238,7 @@
 
     function appendMsg(from, text) {
       const div = document.createElement('div');
-      div.className = 'msg ' + (from === "你" ? 'me' : 'other');
+      div.className = 'msg ' + (from === username ? 'me' : 'other');
       div.textContent = text;
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -221,12 +247,12 @@
     sendBtn.onclick = () => {
       const msg = msgInput.value.trim();
       if (!msg) return;
-      appendMsg("你", msg);
+      appendMsg(username, msg);
       msgInput.value = "";
     };
 
     testBtn.onclick = () => {
-      appendMsg("ESP32", "📦 模擬封包：LoRa 測試訊息\n📶 RSSI: -67 dBm");
+      appendMsg("ESP32", "📦 模擬封包：LoRa 測試訊息\n📶 RSSI: -" + Math.floor(Math.random()*40 + 60) + " dBm");
     };
 
     fontSelect.onchange = () => {
@@ -235,12 +261,25 @@
     };
 
     bgColorPicker.oninput = () => {
-      chatBox.style.backgroundColor = bgColorPicker.value;
+      const color = bgColorPicker.value;
+      chatBox.style.backgroundColor = color;
+      const rgb = parseInt(color.substring(1), 16);
+      const r = (rgb >> 16) & 0xff, g = (rgb >> 8) & 0xff, b = rgb & 0xff;
+      const brightness = 0.299*r + 0.587*g + 0.114*b;
+      if (brightness < 128) document.body.classList.add('dark-mode');
+      else document.body.classList.remove('dark-mode');
     };
 
     darkToggle.onchange = () => {
       document.body.classList.toggle('dark-mode', darkToggle.checked);
     };
+
+    // RSSI 模擬變化
+    setInterval(() => {
+      const rssi = -Math.floor(Math.random() * 30 + 50);
+      const bars = rssi > -60 ? "📶📶📶📶" : rssi > -70 ? "📶📶📶" : rssi > -80 ? "📶📶" : "📶";
+      rssiText.textContent = `${bars} RSSI: ${rssi} dBm`;
+    }, 4000);
   </script>
 </body>
 </html>
