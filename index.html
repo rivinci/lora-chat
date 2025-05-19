@@ -172,4 +172,98 @@
 
     function showAuth(msg=""){authArea.style.display="flex";mainUI.style.display="none";authMsg.textContent=msg;}
     function showMain(u){authArea.style.display="none";mainUI.style.display="block";userInfo.textContent=`使用者：${u}`;loadHistory();loadInput();}
-    function register(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const list=loadAcc();if(list.some(e=>e.u===
+   function register() {
+      const u = usernameEl.value.trim();
+      const p = passwordEl.value;
+      if (!u || !p) {
+        authMsg.textContent = "請輸入帳號密碼";
+        return;
+      }
+      const list = loadAcc();
+      if (list.some(e => e.u === u)) {
+        authMsg.textContent = "帳號已存在";
+        return;
+      }
+      list.push({ u, h: sha256(p) });
+      saveAcc(list);
+      authMsg.textContent = "✅ 註冊成功，請登入";
+      usernameEl.value = "";
+      passwordEl.value = "";
+    }
+
+    function login() {
+      const u = usernameEl.value.trim();
+      const p = passwordEl.value;
+      if (!u || !p) {
+        authMsg.textContent = "請輸入帳號密碼";
+        return;
+      }
+      const acc = loadAcc().find(e => e.u === u);
+      if (!acc || acc.h !== sha256(p)) {
+        authMsg.textContent = "帳號或密碼錯誤";
+        return;
+      }
+      setLogin(u);
+      showMain(u);
+      usernameEl.value = "";
+      passwordEl.value = "";
+    }
+
+    function logout() {
+      setLogin(null);
+      showAuth();
+    }
+
+    function deleteAccount() {
+      if (!confirm("確定刪除帳號？此動作不可恢復！")) return;
+      const u = getLogin();
+      saveAcc(loadAcc().filter(e => e.u !== u));
+      logout();
+    }
+
+    loginBtn.onclick = login;
+    registerBtn.onclick = register;
+    logoutBtn.onclick = logout;
+    deleteBtn.onclick = deleteAccount;
+
+    /* ==== 歷史 / 輸入暫存 ==== */
+    const chatBox = $("chat-box"), msgInput = $("msg-input"), sendBtn = $("send-btn");
+    function loadHistory() { const h = localStorage.getItem(K.HIS); if (h) chatBox.innerHTML = h; }
+    function loadInput() { const t = localStorage.getItem(K.INPUT); if (t) msgInput.value = t; }
+    function appendMsg(from, txt) {
+      const div = document.createElement("div");
+      div.className = "msg " + (from === "你" ? "me" : "other");
+      div.textContent = txt;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      localStorage.setItem(K.HIS, chatBox.innerHTML);
+    }
+    msgInput.addEventListener("input", () => localStorage.setItem(K.INPUT, msgInput.value));
+
+    /* ==== 送訊息 (模擬) ==== */
+    function mockReply(m) { setTimeout(() => appendMsg("ESP32 (模擬)", `收到「${m}」`), 1000); }
+    async function sendMessage() {
+      const m = msgInput.value;
+      if (!m.trim()) return;
+      appendMsg("你", m);
+      msgInput.value = "";
+      localStorage.setItem(K.INPUT, "");
+      mockReply(m); // 真實 BLE 可替換這行
+    }
+    sendBtn.onclick = sendMessage;
+    msgInput.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey && !/Mobi|Android/i.test(navigator.userAgent)) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    /* ==== 進入點 ==== */
+    (function init() {
+      const u = getLogin();
+      u ? showMain(u) : showAuth();
+    })();
+  </script>
+</body>
+</html>
+
