@@ -5,7 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoRa Chat UI</title>
   <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js">
+    // 修復登出按鈕再次綁定（因 window.onload 被提前覆蓋）
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = localStorage.getItem("loggedInUser");
+      if (savedUser && getAccounts()[savedUser]) {
+        username = savedUser;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('layout').style.display = 'flex';
+        document.getElementById('user-label').textContent = `使用者：${username}`;
+      }
+
+      // 修復齒輪按鈕控制側欄顯示
+      document.getElementById('settings-toggle').onclick = () => {
+        document.getElementById('settings-panel').classList.toggle('show');
+      };
+
+      // 修復 BLE 連接按鈕響應
+      document.getElementById('connect-btn').onclick = () => {
+        document.getElementById('status').textContent = "🔄 嘗試連接 BLE... (模擬)";
+        setTimeout(() => {
+          document.getElementById('status').textContent = "✅ 已連接 ESP32 BLE";
+        }, 1500);
+      };
+
+      // 修復登出按鈕
+      const logoutBtn = document.getElementById("logout-btn");
+      if (logoutBtn) {
+        logoutBtn.onclick = () => {
+          localStorage.removeItem("loggedInUser");
+          username = "";
+          document.getElementById("layout").style.display = "none";
+          document.getElementById("login-screen").style.display = "flex";
+          clearInputs();
+        };
+      }
+    });
+  </script>
   <style>
     * { box-sizing: border-box; }
     body, html {
@@ -141,7 +177,10 @@
   </div>
   <div id="layout">
     <header>
-      <span id="user-label"></span>
+      <div style="display: flex; flex-direction: column;">
+        <span id="user-label"></span>
+        <button id="logout-btn" style="margin-top: 4px; padding: 4px 8px; font-size: 0.8em;">登出</button>
+      </div>
       <button id="connect-btn">連接 BLE</button>
     </header>
     <button id="settings-toggle">⚙️</button>
@@ -241,7 +280,15 @@
       panel.classList.toggle('show');
     };
 
-    window.onload = () => {
+    document.getElementById("logout-btn").onclick = () => {
+  localStorage.removeItem("loggedInUser");
+  username = "";
+  document.getElementById("layout").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
+  clearInputs();
+};
+
+window.onload = () => {
       const savedUser = localStorage.getItem("loggedInUser");
       if (savedUser && getAccounts()[savedUser]) {
         username = savedUser;
