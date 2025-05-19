@@ -23,15 +23,23 @@
       --font:"Segoe UI";
     }
     *{box-sizing:border-box;}
+
+    /* 全域文字與背景顏色 */
     body,button,input,select,textarea,label,div,span,h1,h2,h3,h4,h5,h6{
       font-family:var(--font),sans-serif;
       color:var(--text);
-      transition:color .3s ease,background .3s ease;
+      transition:color .3s ease,background .3s ease, border-color .3s ease;
     }
+
+    /* 背景色設定 */
     body{margin:0;padding:10px;background:var(--bg);}    
+    input,textarea,select{background:var(--panel);border:1px solid #ccc;border-radius:6px;}
+    select,option{background:var(--panel);color:var(--text);} /* 下拉選項保持對比 */
+    textarea::placeholder,input::placeholder{color:var(--text);opacity:.6;}
+
     h2{margin:.3em 0 .6em;text-align:center;color:var(--primary);user-select:none;}
 
-    /* 共用按鈕 */
+    /* 按鈕 */
     button{
       background:var(--btn-bg);
       color:var(--btn-txt);
@@ -44,32 +52,31 @@
     #auth-area{
       max-width:420px;margin:0 auto 20px;background:var(--panel);
       padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);
-      display:flex;flex-direction:column;gap:10px;transition:background .3s ease;
+      display:flex;flex-direction:column;gap:10px;
     }
-    #auth-area input{padding:8px 12px;font-size:1em;}
     #auth-msg{text-align:center;font-size:.9em;color:#c00;min-height:1.2em;}
 
     /* MAIN */
     #main-ui{display:none;}
-    #status{text-align:center;margin-bottom:5px;font-size:.9em;}
+    #status{text-align:center;margin-bottom:5px;font-size:.9em;font-weight:600;}
     #top-bar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:10px;}
     #settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
-    label{font-size:.9em;}
+    label{font-size:.9em;font-weight:600;}
     #chat-box{
       border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;
       background:var(--panel);display:flex;flex-direction:column;gap:5px;margin-bottom:10px;
-      transition:background .3s ease;
     }
     .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap;word-wrap:break-word;}
     .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} 
     .other{align-self:flex-start;background:var(--other);color:var(--text);}    
+
     #input-area{display:flex;gap:5px;}
-    #msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;background:var(--panel);border:1px solid #ccc;border-radius:6px;}
+    #msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;}
 
     /* 危險動作區 */
     #danger-zone{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
     #danger-zone button{background:#d9534f;color:#fff;}
-    #user-info{font-size:.9em;text-align:center;margin-top:2px;}
+    #user-info{font-size:.9em;text-align:center;margin-top:2px;font-weight:600;}
   </style>
 </head>
 <body>
