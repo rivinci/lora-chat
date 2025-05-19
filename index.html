@@ -4,299 +4,141 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoRa Chat UI</title>
-  <link rel="manifest" href="manifest.json">
+  <!-- SHA‑256  -->
   <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
   <style>
-    * { box-sizing: border-box; }
-    body, html {
-      margin: 0;
-      height: 100%;
-      font-family: "Segoe UI", sans-serif;
-      background-color: #f0f4f8;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    body.dark-mode {
-      background-color: #121212;
-      color: #e0e0e0;
-    }
-    #login-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 999;
-    }
-    #login-screen input {
-      padding: 8px;
-      margin: 5px;
-      font-size: 1em;
-    }
-    #layout {
-      display: none;
-      flex-direction: column;
-      height: 100vh;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      background-color: #2a6f97;
-      color: #fff;
-    }
-    #user-label {
-      font-weight: bold;
-    }
-    #top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 10px;
-      background: #e0e0e0;
-      color: #000;
-      font-size: 0.9em;
-    }
-    #rssi-indicator, #stats {
-      margin-right: 10px;
-    }
-    body.dark-mode #top-bar {
-      background: #1f1f1f;
-      color: #fff;
-    }
-    #settings-toggle {
-      position: fixed;
-      top: 60px;
-      right: 10px;
-      font-size: 1.2em;
-      background: #2a6f97;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      padding: 6px 10px;
-      z-index: 101;
-      border-radius: 4px;
-    }
-    #content { display: flex; flex: 1; overflow: hidden; }
-    aside {
-      width: 260px;
-      padding: 20px;
-      background-color: #eaeaea;
-      border-left: 1px solid #ccc;
-      transition: transform 0.3s ease;
-      transform: translateX(100%);
-      position: fixed;
-      top: 50px;
-      right: 0;
-      height: calc(100vh - 50px);
-      overflow-y: auto;
-      z-index: 100;
-    }
-    aside.show { transform: translateX(0); }
-    main {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      margin-top: 50px;
-    }
-    #chat-box {
-      border: 1px solid #ccc;
-      padding: 10px;
-      height: calc(100vh - 240px);
-      overflow-y: scroll;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    body.dark-mode #chat-box {
-      background: #1e1e1e;
-      color: #fff;
-    }
-    .msg {
-      max-width: 70%;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 1em;
-      white-space: pre-wrap;
-    }
-    .me { align-self: flex-end; background-color: #d0f0fd; color: #003f5c; }
-    .other { align-self: flex-start; background-color: #e2e2e2; color: #000; }
-    #input-area { display: flex; flex-direction: row; gap: 5px; margin-top: 10px; }
-    #msg-input { flex: 1; padding: 8px; font-size: 1em; }
-    #send-btn { padding: 8px 12px; font-size: 1em; }
-    aside label, aside button { display: block; margin: 8px 0; }
+    *{box-sizing:border-box}
+    body,html{margin:0;height:100%;font-family:"Segoe UI",sans-serif;transition:.3s background-color,color}
+    body{background:#f0f4f8}
+    body.dark{background:#121212;color:#e0e0e0}
+    /* --- Login --- */
+    #login{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#fff;gap:.5rem;z-index:1000}
+    #login input{padding:8px;font-size:1rem;width:220px}
+    #login button{padding:6px 12px;font-size:.9rem}
+    /* --- Layout --- */
+    #app{display:none;flex-direction:column;height:100vh}
+    header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#2a6f97;color:#fff}
+    header button{padding:4px 10px}
+    #topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:.9rem;background:#e0e0e0}
+    body.dark #topbar{background:#1f1f1f}
+    #content{flex:1;display:flex;overflow:hidden}
+    aside{width:260px;padding:20px;background:#eaeaea;border-left:1px solid #ccc;position:fixed;top:50px;right:0;height:calc(100vh-50px);overflow-y:auto;transform:translateX(100%);transition:.3s}
+    aside.show{transform:translateX(0)}
+    body.dark aside{background:#1f1f1f;color:#fff}
+    main{flex:1;padding:10px;margin-top:50px;overflow-y:auto}
+    #chat{border:1px solid #ccc;padding:10px;height:calc(100vh - 240px);overflow-y:auto;background:#fff;display:flex;flex-direction:column;gap:5px}
+    body.dark #chat{background:#1e1e1e;color:#fff}
+    .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap}
+    .me{align-self:flex-end;background:#d0f0fd;color:#003f5c}
+    .other{align-self:flex-start;background:#e2e2e2;color:#000}
+    #input{display:flex;gap:5px;margin-top:10px}
+    #input textarea{flex:1;resize:vertical;min-height:3em}
+    #input button{padding:8px 12px}
   </style>
 </head>
 <body>
-  <div id="login-screen">
-    <h2>登入 LoRa Chat</h2>
-    <input type="text" id="username" placeholder="使用者名稱">
-    <input type="password" id="password" placeholder="密碼">
-    <button onclick="login()">登入</button>
-    <button onclick="register()">註冊新帳號</button>
-    <button onclick="deleteAccount()">🗑️ 刪除帳號</button>
+  <!-- Login Screen -->
+  <div id="login">
+    <h2>LoRa Chat 登入</h2>
+    <input id="lgUser" placeholder="帳號">
+    <input id="lgPass" type="password" placeholder="密碼">
+    <div style="display:flex;gap:6px">
+      <button id="btnLogin">登入</button>
+      <button id="btnReg">註冊</button>
+      <button id="btnDel">🗑️刪除</button>
+    </div>
+    <span id="loginMsg" style="color:#d00"></span>
   </div>
-  <div id="layout">
+
+  <!-- App Layout -->
+  <div id="app">
     <header>
-      <div>
-        <span id="user-label"></span>
-        <button id="logout-btn" style="margin-left: 10px;">登出</button>
-      </div>
-      <button id="settings-toggle">⚙️</button>
+      <div><span id="userLbl"></span> <button id="btnLogout">登出</button></div>
+      <button id="btnGear">⚙️</button>
     </header>
-    <div id="top-bar">
-      <div>
-        <span id="rssi-indicator">📶 RSSI: - dBm</span>
-        <button id="connect-btn">連接 BLE</button>
+    <div id="topbar">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="rssi">📶 RSSI:- dBm</span>
+        <button id="btnBLE">連接 BLE</button>
       </div>
-      <span id="stats">已傳送：0｜成功：0｜失敗：0｜重送：0</span>
+      <span id="stats">已傳送:0｜成功:0｜失敗:0｜重送:0</span>
     </div>
     <div id="content">
       <main>
         <div id="status">尚未連接藍牙</div>
-        <div id="chat-box"></div>
-        <div id="input-area">
-          <textarea id="msg-input" placeholder="輸入訊息..." rows="2"></textarea>
-          <button id="send-btn">傳送</button>
+        <div id="chat"></div>
+        <div id="input">
+          <textarea id="msg" placeholder="輸入訊息…"></textarea>
+          <button id="send">傳送</button>
         </div>
       </main>
-      <aside id="settings-panel">
-        <h3>設定 ⚙</h3>
-        <button id="gen-key-btn">產生金鑰對</button>
-        <button id="export-key-btn">匯出金鑰</button>
-        <input type="file" id="import-key-file" style="display: none">
-        <label><input type="checkbox" id="anon-mode"> 匿名模式</label>
-        <label>驗證模式：<select id="mode-select">
-          <option value="full">每封驗簽</option>
-          <option value="cache">快取模式</option>
-          <option value="session">Session 模式</option>
-        </select></label>
-        <label>選擇字體：<select id="font-select">
-          <option value="Segoe UI">Segoe UI</option>
-          <option value="Arial">Arial</option>
-          <option value="Courier New">Courier New</option>
-          <option value="Noto Sans TC">Noto Sans TC</option>
-        </select></label>
-        <label>背景顏色：<input type="color" id="bg-color" value="#ffffff"></label>
-        <label><input type="checkbox" id="dark-toggle"> 深色模式</label>
-        <label><input type="checkbox" id="debug-toggle"> 顯示封包原文</label>
-        <label>重送次數：<input type="number" id="retry-count" min="0" max="5" value="0"></label>
-        <button id="export-log-btn">匯出聊天紀錄</button>
-        <button id="test-msg-btn">模擬封包</button>
+      <aside id="panel">
+        <h3>設定</h3>
+        <label><input type="checkbox" id="anon"> 匿名模式</label>
+        <label>驗證：<select id="mode"><option value="full">每封驗簽</option><option value="cache">快取</option><option value="session">Session</option></select></label>
+        <label>字體：<select id="font"><option>Segoe UI</option><option>Arial</option><option>Courier New</option><option>Noto Sans TC</option></select></label>
+        <label>背景色：<input type="color" id="bg" value="#ffffff"></label>
+        <button id="genKey">產生金鑰</button>
+        <button id="expKey">匯出金鑰</button>
       </aside>
     </div>
   </div>
-  <script>
-    let username = "";
-    let stats = { sent: 0, success: 0, fail: 0, retry: 0 };
 
-    function getAccounts() {
-      return JSON.parse(localStorage.getItem("accounts") || "{}");
-    }
+<script>
+/***** 帳號系統 *****/
+const ACC_KEY='accounts';
+function getAcc(){return JSON.parse(localStorage.getItem(ACC_KEY)||'{}');}
+function setAcc(obj){localStorage.setItem(ACC_KEY,JSON.stringify(obj));}
+const lgMsg=document.getElementById('loginMsg');
+function hash(p){return sha256(p);} // SHA‑256
+function clearLg(){lgUser.value='';lgPass.value='';}
+btnReg.onclick=()=>{
+  const u=lgUser.value.trim(),p=lgPass.value.trim();
+  if(!u||!p)return lgMsg.textContent='請輸入帳密';
+  const acc=getAcc();acc[u]=hash(p);setAcc(acc);
+  lgMsg.textContent='✅ 註冊成功';clearLg();};
+btnDel.onclick=()=>{
+  const u=lgUser.value.trim();const acc=getAcc();
+  if(acc[u]){delete acc[u];setAcc(acc);lgMsg.textContent='✅ 已刪除';}else lgMsg.textContent='無此帳號';clearLg();};
+function enterApp(u){userLbl.textContent='使用者:'+u;document.getElementById('login').style.display='none';app.style.display='flex';localStorage.setItem('loggedInUser',u);} 
+btnLogin.onclick=()=>{
+  const u=lgUser.value.trim(),p=lgPass.value.trim();const acc=getAcc();
+  if(acc[u]&&acc[u]===hash(p)) enterApp(u); else lgMsg.textContent='帳號或密碼錯誤';};
+btnLogout.onclick=()=>{localStorage.removeItem('loggedInUser');location.reload();};
+// auto‑login
+const au=localStorage.getItem('loggedInUser');if(au&&getAcc()[au])enterApp(au);
 
-    function clearInputs() {
-      document.getElementById('username').value = "";
-      document.getElementById('password').value = "";
-    }
+/***** BLE + Chat *****/
+const chat=chatBox=document.getElementById('chat');
+const msgInput=document.getElementById('msg');
+const statsTxt=document.getElementById('stats');
+let stats={sent:0,success:0,fail:0,retry:0};
+function updStats(){statsTxt.textContent=`已傳送:${stats.sent}｜成功:${stats.success}｜失敗:${stats.fail}｜重送:${stats.retry}`;}
+function addMsg(from,text){const d=document.createElement('div');d.className='msg '+(from===userLbl.textContent.split('：')[1]?'me':'other');d.textContent=text;chat.appendChild(d);chat.scrollTop=chat.scrollHeight;}
+function send(){const t=msgInput.value.trim();if(!t)return;addMsg(userLbl.textContent.split('：')[1],t);msgInput.value='';stats.sent++;updStats();if(bleCharacteristicTX){bleCharacteristicTX.writeValue(new TextEncoder().encode(t)).then(()=>{stats.success++;updStats();}).catch(()=>{stats.fail++;updStats();});}}
+send.onclick=sendBtn.onclick=send;
+msgInput.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}};
+// BLE
+let bleDevice,bleCharacteristicTX,bleCharacteristicRX;
+btnBLE.onclick=async()=>{
+  try{
+    bleDevice=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'ESP32'}],optionalServices:['6e400001-b5a3-f393-e0a9-e50e24dcca9e']});
+    bleDevice.addEventListener('gattserverdisconnected',()=>{status.textContent='❌ 斷線';});
+    const s=await bleDevice.gatt.connect();const svc=await s.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e');
+    bleCharacteristicTX=await svc.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e');
+    bleCharacteristicRX=await svc.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e');
+    await bleCharacteristicRX.startNotifications();bleCharacteristicRX.addEventListener('characteristicvaluechanged',e=>{addMsg('ESP32',new TextDecoder().decode(e.target.value));});
+    status.textContent='✅ 已連接 '+(bleDevice.name||'ESP32');
+  }catch(err){status.textContent='❌ 連線失敗';console.error(err);} };
+// RSSI 模擬
+setInterval(()=>{const r=-Math.floor(Math.random()*40+60);const bars=r>-60?'📶📶📶📶':r>-70?'📶📶📶':r>-80?'📶📶':'📶';rssi.textContent=`${bars} RSSI:${r} dBm`;},4000);
 
-    function login() {
-      const name = document.getElementById('username').value.trim();
-      const pwd = document.getElementById('password').value.trim();
-      const hash = sha256(pwd);
-      const accounts = getAccounts();
-      if (!accounts[name]) return alert("❌ 此帳號尚未註冊");
-      if (accounts[name] !== hash) return alert("❌ 密碼錯誤");
-      username = name;
-      localStorage.setItem("loggedInUser", name);
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('layout').style.display = 'flex';
-      document.getElementById('user-label').textContent = `使用者：${username}`;
-      clearInputs();
-    }
-
-    function register() {
-      const name = document.getElementById('username').value.trim();
-      const pwd = document.getElementById('password').value.trim();
-      if (!name || !pwd) return alert("請填寫帳號與密碼");
-      const accounts = getAccounts();
-      accounts[name] = sha256(pwd);
-      localStorage.setItem("accounts", JSON.stringify(accounts));
-      alert("✅ 註冊成功，請重新登入");
-      clearInputs();
-    }
-
-    function deleteAccount() {
-      const name = document.getElementById('username').value.trim();
-      const accounts = getAccounts();
-      if (accounts[name]) {
-        delete accounts[name];
-        localStorage.setItem("accounts", JSON.stringify(accounts));
-        alert("✅ 已刪除帳號");
-        clearInputs();
-      } else {
-        alert("❌ 此帳號不存在");
-      }
-    }
-
-    window.onload = () => {
-      const savedUser = localStorage.getItem("loggedInUser");
-      if (savedUser && getAccounts()[savedUser]) {
-        username = savedUser;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('layout').style.display = 'flex';
-        document.getElementById('user-label').textContent = `使用者：${username}`;
-      }
-
-      document.getElementById('settings-toggle').onclick = () => {
-        document.getElementById('settings-panel').classList.toggle('show');
-      };
-
-      document.getElementById('connect-btn').onclick = () => {
-        const status = document.getElementById('status');
-        status.textContent = "🔄 嘗試連接藍牙...";
-        navigator.bluetooth.requestDevice({ acceptAllDevices: true })
-          .then(device => {
-            status.textContent = `✅ 已連接裝置：${device.name || '未命名裝置'}`;
-          })
-          .catch(err => {
-            status.textContent = `❌ 藍牙連線失敗：${err.message}`;
-          });
-      };
-
-      document.getElementById('logout-btn').onclick = () => {
-        localStorage.removeItem("loggedInUser");
-        username = "";
-        document.getElementById("layout").style.display = "none";
-        document.getElementById("login-screen").style.display = "flex";
-        clearInputs();
-      };
-
-      document.getElementById("send-btn").onclick = () => {
-        const msg = document.getElementById("msg-input").value.trim();
-        if (!msg) return;
-        const div = document.createElement("div");
-        div.className = 'msg me';
-        div.textContent = msg;
-        document.getElementById("chat-box").appendChild(div);
-        document.getElementById("msg-input").value = "";
-        stats.sent++;
-        document.getElementById("stats").textContent = `已傳送：${stats.sent}｜成功：${stats.success}｜失敗：${stats.fail}｜重送：${stats.retry}`;
-      };
-
-      document.getElementById("font-select").onchange = (e) => {
-        document.getElementById("chat-box").style.fontFamily = e.target.value;
-        document.getElementById("msg-input").style.fontFamily = e.target.value;
-      };
-
-      document.getElementById("bg-color").oninput = (e) => {
-        const bg = e.target.value;
-        document.getElementById("chat-box").style.backgroundColor = bg;
-      };
-    };
-  </script>
+/***** 偏好設定 *****/
+font.onchange=e=>{chat.style.fontFamily=msgInput.style.fontFamily=e.target.value;localStorage.setItem('font',e.target.value);};
+bg.oninput=e=>{chat.style.backgroundColor=e.target.value;localStorage.setItem('bg',e.target.value);} ;
+btnGear.onclick=()=>panel.classList.toggle('show');
+// 載入偏好
+(function(){const f=localStorage.getItem('font');if(f){font.value=f;font.dispatchEvent(new Event('change'));}const b=localStorage.getItem('bg');if(b){bg.value=b;bg.dispatchEvent(new Event('input'));}})();
+</script>
 </body>
 </html>
