@@ -67,14 +67,16 @@
     }
     #settings-toggle {
       position: fixed;
-      top: 10px;
+      top: 60px;
       right: 10px;
       font-size: 1.2em;
-      background: none;
+      background: #2a6f97;
       border: none;
       color: #fff;
       cursor: pointer;
+      padding: 6px 10px;
       z-index: 101;
+      border-radius: 4px;
     }
     #rssi-indicator { margin-right: 10px; }
     #content { display: flex; flex: 1; overflow: hidden; }
@@ -142,11 +144,11 @@
       <span id="user-label"></span>
       <button id="connect-btn">連接 BLE</button>
     </header>
+    <button id="settings-toggle">⚙️</button>
     <div id="top-bar">
       <span id="rssi-indicator">📶 RSSI: - dBm</span>
       <span id="stats">已傳送：0｜成功：0｜失敗：0｜重送：0</span>
     </div>
-    <button id="settings-toggle">⚙️</button>
     <div id="content">
       <main>
         <div id="status">尚未連接藍牙</div>
@@ -189,6 +191,11 @@
       return JSON.parse(localStorage.getItem("accounts") || "{}");
     }
 
+    function clearInputs() {
+      document.getElementById('username').value = "";
+      document.getElementById('password').value = "";
+    }
+
     function login() {
       const name = document.getElementById('username').value.trim();
       const pwd = document.getElementById('password').value.trim();
@@ -201,6 +208,7 @@
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('layout').style.display = 'flex';
       document.getElementById('user-label').textContent = `使用者：${username}`;
+      clearInputs();
     }
 
     function register() {
@@ -211,6 +219,7 @@
       accounts[name] = sha256(pwd);
       localStorage.setItem("accounts", JSON.stringify(accounts));
       alert("✅ 註冊成功，請重新登入");
+      clearInputs();
     }
 
     function deleteAccount() {
@@ -220,10 +229,17 @@
         delete accounts[name];
         localStorage.setItem("accounts", JSON.stringify(accounts));
         alert("✅ 已刪除帳號");
+        clearInputs();
       } else {
         alert("❌ 此帳號不存在");
       }
     }
+
+    const toggleBtn = document.getElementById('settings-toggle');
+    const panel = document.getElementById('settings-panel');
+    toggleBtn.onclick = () => {
+      panel.classList.toggle('show');
+    };
 
     window.onload = () => {
       const savedUser = localStorage.getItem("loggedInUser");
