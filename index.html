@@ -177,14 +177,17 @@
   </div>
   <div id="layout">
     <header>
-      <div style="display: flex; flex-direction: column;">
-        <span id="user-label"></span>
-        <button id="logout-btn" style="margin-top: 4px; padding: 4px 8px; font-size: 0.8em;">登出</button>
-      </div>
-      <button id="connect-btn">連接 BLE</button>
-    </header>
+  <div style="display: flex; flex-direction: column;">
+    <span id="user-label"></span>
+    <button id="logout-btn" style="margin-top: 4px; padding: 4px 8px; font-size: 0.8em;">登出</button>
+  </div>
+</header>
     <button id="settings-toggle">⚙️</button>
     <div id="top-bar">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span id="rssi-indicator">📶 RSSI: - dBm</span>
+    <button id="connect-btn">連接 BLE</button>
+  </div>
       <span id="rssi-indicator">📶 RSSI: - dBm</span>
       <span id="stats">已傳送：0｜成功：0｜失敗：0｜重送：0</span>
     </div>
@@ -289,14 +292,40 @@
 };
 
 window.onload = () => {
-      const savedUser = localStorage.getItem("loggedInUser");
-      if (savedUser && getAccounts()[savedUser]) {
-        username = savedUser;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('layout').style.display = 'flex';
-        document.getElementById('user-label').textContent = `使用者：${username}`;
-      }
+  const savedUser = localStorage.getItem("loggedInUser");
+  if (savedUser && getAccounts()[savedUser]) {
+    username = savedUser;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('layout').style.display = 'flex';
+    document.getElementById('user-label').textContent = `使用者：${username}`;
+  }
+
+  document.getElementById('settings-toggle').onclick = () => {
+    document.getElementById('settings-panel').classList.toggle('show');
+  };
+
+  const connectBtn = document.getElementById('connect-btn');
+  if (connectBtn) {
+    connectBtn.onclick = () => {
+      const status = document.getElementById('status');
+      status.textContent = "🔄 嘗試連接 BLE... (模擬)";
+      setTimeout(() => {
+        status.textContent = "✅ 已連接 ESP32 BLE";
+      }, 1000);
     };
+  }
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      localStorage.removeItem("loggedInUser");
+      username = "";
+      document.getElementById("layout").style.display = "none";
+      document.getElementById("login-screen").style.display = "flex";
+      clearInputs();
+    };
+  }
+};
   </script>
 </body>
 </html>
