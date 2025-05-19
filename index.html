@@ -13,26 +13,39 @@
       /* 動態主題變數 */
       --bg:#f0f4f8;
       --panel:#ffffff;
+      --text:#333333;
       --primary:#2a6f97;
       --me:#d0f0fd;
       --me-txt:#003f5c;
       --other:#e2e2e2;
       --btn-bg:#2a6f97;
-      --btn-txt:#fff;
+      --btn-txt:#ffffff;
       --font:"Segoe UI";
     }
     *{box-sizing:border-box;}
-    /* 讓所有文字元素跟隨 --font */
-    body,button,input,select,textarea,label,div,span,h1,h2,h3,h4,h5,h6{font-family:var(--font),sans-serif;transition:color .3s ease,background .3s ease;}    
-    body{margin:0;padding:10px;background:var(--bg);}
+    body,button,input,select,textarea,label,div,span,h1,h2,h3,h4,h5,h6{
+      font-family:var(--font),sans-serif;
+      color:var(--text);
+      transition:color .3s ease,background .3s ease;
+    }
+    body{margin:0;padding:10px;background:var(--bg);}    
     h2{margin:.3em 0 .6em;text-align:center;color:var(--primary);user-select:none;}
 
     /* 共用按鈕 */
-    button{background:var(--btn-bg);color:var(--btn-txt);border:none;border-radius:6px;padding:8px 12px;font-size:1em;cursor:pointer;transition:background .2s ease;} 
-    button:hover{filter:brightness(1.05);}button:active{filter:brightness(.9);} 
+    button{
+      background:var(--btn-bg);
+      color:var(--btn-txt);
+      border:none;border-radius:6px;padding:8px 12px;font-size:1em;cursor:pointer;
+      transition:background .2s ease;
+    }
+    button:hover{filter:brightness(1.05);} button:active{filter:brightness(.9);} 
 
     /* AUTH */
-    #auth-area{max-width:420px;margin:0 auto 20px;background:var(--panel);padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:10px;transition:background .3s ease;}
+    #auth-area{
+      max-width:420px;margin:0 auto 20px;background:var(--panel);
+      padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);
+      display:flex;flex-direction:column;gap:10px;transition:background .3s ease;
+    }
     #auth-area input{padding:8px 12px;font-size:1em;}
     #auth-msg{text-align:center;font-size:.9em;color:#c00;min-height:1.2em;}
 
@@ -42,9 +55,14 @@
     #top-bar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:10px;}
     #settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
     label{font-size:.9em;}
-    #chat-box{border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;background:var(--panel);display:flex;flex-direction:column;gap:5px;margin-bottom:10px;transition:background .3s ease;}
+    #chat-box{
+      border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;
+      background:var(--panel);display:flex;flex-direction:column;gap:5px;margin-bottom:10px;
+      transition:background .3s ease;
+    }
     .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap;word-wrap:break-word;}
-    .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} .other{align-self:flex-start;background:var(--other);color:#000;}
+    .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} 
+    .other{align-self:flex-start;background:var(--other);color:var(--text);}    
     #input-area{display:flex;gap:5px;}
     #msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;background:var(--panel);border:1px solid #ccc;border-radius:6px;}
 
@@ -114,22 +132,27 @@
     const K={ACC:"accounts",LOGIN:"loggedInUser",HIS:"lora-chat-history",INPUT:"lora-chat-input",THEME:"lora-chat-theme",FONT:"lora-chat-font"};
     const $=id=>document.getElementById(id);
 
-    /* ==== 主題定義 ==== */
+    /* ==== 主題定義 (新增 text 欄位) ==== */
     const THEMES={
-      default:{bg:"#f0f4f8",panel:"#ffffff",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#e2e2e2",btn:"#2a6f97",btnTxt:"#fff"},
-      dark   :{bg:"#1e1e1e",panel:"#2d2d2d",primary:"#81c1ff",me:"#3b78ff",meTxt:"#fff",other:"#555",btn:"#3b78ff",btnTxt:"#fff"},
-      daisy  :{bg:"#fff9e6",panel:"#ffffff",primary:"#e2a000",me:"#ffe4a8",meTxt:"#924e00",other:"#e2e2e2",btn:"#e2a000",btnTxt:"#fff"},
-      sky    :{bg:"#e7f3ff",panel:"#ffffff",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#cadced",btn:"#2a6f97",btnTxt:"#fff"},
-      mint   :{bg:"#eaf7ea",panel:"#ffffff",primary:"#2f8f5b",me:"#c6ecc6",meTxt:"#134a2f",other:"#d0d0d0",btn:"#2f8f5b",btnTxt:"#fff"}
+      default:{bg:"#f0f4f8",panel:"#ffffff",text:"#333",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#e2e2e2",btn:"#2a6f97",btnTxt:"#fff"},
+      dark   :{bg:"#1e1e1e",panel:"#2d2d2d",text:"#e0e0e0",primary:"#81c1ff",me:"#3b78ff",meTxt:"#ffffff",other:"#555",btn:"#3b78ff",btnTxt:"#fff"},
+      daisy  :{bg:"#fff9e6",panel:"#ffffff",text:"#333",primary:"#e2a000",me:"#ffe4a8",meTxt:"#924e00",other:"#e2e2e2",btn:"#e2a000",btnTxt:"#fff"},
+      sky    :{bg:"#e7f3ff",panel:"#ffffff",text:"#003f5c",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#cadced",btn:"#2a6f97",btnTxt:"#fff"},
+      mint   :{bg:"#eaf7ea",panel:"#ffffff",text:"#2b4f36",primary:"#2f8f5b",me:"#c6ecc6",meTxt:"#134a2f",other:"#d0d0d0",btn:"#2f8f5b",btnTxt:"#fff"}
     };
 
-    function applyTheme(id){const t=THEMES[id]||THEMES.default;for(const k in t){document.documentElement.style.setProperty(`--${k}`,t[k]);}
-      localStorage.setItem(K.THEME,id);}    
+    function applyTheme(id){
+      const t=THEMES[id]||THEMES.default;
+      for(const k in t){document.documentElement.style.setProperty(`--${k}`,t[k]);}
+      localStorage.setItem(K.THEME,id);
+    }
 
     /* ==== 初始 ==== */
-    const themeSelect=$("theme-select");const fontSelect=$("font-select");
-    const savedTheme=localStorage.getItem(K.THEME)||"default";themeSelect.value=savedTheme;applyTheme(savedTheme);
-    const savedFont=localStorage.getItem(K.FONT);if(savedFont){document.documentElement.style.setProperty("--font",savedFont);fontSelect.value=savedFont;}
+    const themeSelect=$("theme-select"),fontSelect=$("font-select");
+    const savedTheme=localStorage.getItem(K.THEME)||"default";
+    themeSelect.value=savedTheme;applyTheme(savedTheme);
+    const savedFont=localStorage.getItem(K.FONT);
+    if(savedFont){document.documentElement.style.setProperty("--font",savedFont);fontSelect.value=savedFont;}
 
     themeSelect.addEventListener("change",()=>applyTheme(themeSelect.value));
     fontSelect.addEventListener("change",()=>{document.documentElement.style.setProperty("--font",fontSelect.value);localStorage.setItem(K.FONT,fontSelect.value);});
@@ -142,26 +165,4 @@
 
     function showAuth(msg=""){authArea.style.display="flex";mainUI.style.display="none";authMsg.textContent=msg;}
     function showMain(u){authArea.style.display="none";mainUI.style.display="block";userInfo.textContent=`使用者：${u}`;loadHistory();loadInput();}
-    function register(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const list=loadAcc();if(list.some(e=>e.u===u)){authMsg.textContent="帳號已存在";return;}list.push({u,h:sha256(p)});saveAcc(list);authMsg.textContent="✅ 註冊成功，請登入";usernameEl.value=passwordEl.value="";}
-    function login(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const e=loadAcc().find(e=>e.u===u);if(!e||e.h!==sha256(p)){authMsg.textContent="帳號或密碼錯誤";return;}setLogin(u);showMain(u);}    
-    function logout(){setLogin(null);showAuth();}
-    function delAcc(){if(!confirm("確定刪除帳號？"))return;saveAcc(loadAcc().filter(e=>e.u!==getLogin()));logout();}
-    registerBtn.onclick=register;loginBtn.onclick=login;logoutBtn.onclick=logout;deleteBtn.onclick=delAcc;
-
-    /* ==== 聊天 / BLE ==== */
-    const chatBox=$("chat-box"),msgInput=$("msg-input"),sendBtn=$("send-btn"),connectBtn=$("connect-btn"),statusText=$("status");
-    function appendMsg(from,txt){const d=document.createElement("div");d.className="msg "+(from==="你"?"me":"other");d.textContent=txt;chatBox.appendChild(d);chatBox.scrollTop=chatBox.scrollHeight;localStorage.setItem(K.HIS,chatBox.innerHTML);}    
-    const loadHistory=()=>{const h=localStorage.getItem(K.HIS);if(h)chatBox.innerHTML=h;};const loadInput=()=>{const t=localStorage.getItem(K.INPUT);if(t)msgInput.value=t;};msgInput.addEventListener("input",()=>localStorage.setItem(K.INPUT,msgInput.value));
-    function mock(msg){setTimeout(()=>appendMsg("ESP32 (模擬)",`收到「${msg}」`),1000);}    
-    async function send(){const m=msgInput.value;if(!m.trim())return;appendMsg("你",m);msgInput.value="";localStorage.setItem(K.INPUT,"");if(window.bleTX){await bleTX.writeValue(new TextEncoder().encode(m));}else mock(m);}    
-    sendBtn.onclick=send;msgInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!/Mobi|Android/i.test(navigator.userAgent)){e.preventDefault();send();}});
-
-    /* BLE */
-    let bleDevice,bleServer,bleService,bleTX,bleRX,discNotified=false;
-    connectBtn.onclick=async()=>{try{bleDevice=await navigator.bluetooth.requestDevice({filters:[{namePrefix:"ESP32"}],optionalServices:["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]});bleDevice.addEventListener("gattserverdisconnected",()=>{statusText.textContent="❌ 藍牙已中斷";if(!discNotified){appendMsg("系統","⚠️ 藍牙已中斷連線");discNotified=true;}});bleServer=await bleDevice.gatt.connect();bleService=await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");bleTX=await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");bleRX=await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");await bleRX.startNotifications();bleRX.addEventListener("characteristicvaluechanged",e=>appendMsg("ESP32",new TextDecoder().decode(e.target.value)));statusText.textContent="✅ 已連接 ESP32 BLE";discNotified=false;appendMsg("系統","✅ 已連接 ESP32 BLE");}catch(err){console.error(err);statusText.textContent="❌ 藍牙連線失敗";appendMsg("系統","❌ BLE 連線失敗");}};
-
-    /* ==== 進入點 ==== */
-    (function(){const user=getLogin();user?showMain(user):showAuth();})();
-  </script>
-</body>
-</html>
+    function register(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const list=loadAcc();if(list.some(e=>e.u===
