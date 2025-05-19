@@ -10,24 +10,26 @@
   <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("service-worker.js").catch(console.error);}</script>
   <style>
     :root{
-      /* 動態主題變數(由 JS 注入) */
-      --bg:#f0f4f8;        /* 背景 */
-      --panel:#ffffff;     /* 卡片/輸入框背景 */
-      --primary:#2a6f97;   /* 文字主色 */
-      --me:#d0f0fd;        /* 我方訊息 */
+      /* 動態主題變數 */
+      --bg:#f0f4f8;
+      --panel:#ffffff;
+      --primary:#2a6f97;
+      --me:#d0f0fd;
       --me-txt:#003f5c;
-      --other:#e2e2e2;     /* 他方訊息 */
-      --btn-bg:#2a6f97;    /* 按鈕背景 */
-      --btn-txt:#fff;      /* 按鈕文字 */
-      --font:"Segoe UI";  /* 全站字體 */
+      --other:#e2e2e2;
+      --btn-bg:#2a6f97;
+      --btn-txt:#fff;
+      --font:"Segoe UI";
     }
     *{box-sizing:border-box;}
-    body{margin:0;padding:10px;background:var(--bg);font-family:var(--font),sans-serif;transition:background .3s ease,color .3s ease;}
+    /* 讓所有文字元素跟隨 --font */
+    body,button,input,select,textarea,label,div,span,h1,h2,h3,h4,h5,h6{font-family:var(--font),sans-serif;transition:color .3s ease,background .3s ease;}    
+    body{margin:0;padding:10px;background:var(--bg);}
     h2{margin:.3em 0 .6em;text-align:center;color:var(--primary);user-select:none;}
 
-    /* 共用按鈕樣式 */
+    /* 共用按鈕 */
     button{background:var(--btn-bg);color:var(--btn-txt);border:none;border-radius:6px;padding:8px 12px;font-size:1em;cursor:pointer;transition:background .2s ease;} 
-    button:hover{filter:brightness(1.05);} button:active{filter:brightness(.9);} 
+    button:hover{filter:brightness(1.05);}button:active{filter:brightness(.9);} 
 
     /* AUTH */
     #auth-area{max-width:420px;margin:0 auto 20px;background:var(--panel);padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:10px;transition:background .3s ease;}
@@ -43,10 +45,12 @@
     #chat-box{border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;background:var(--panel);display:flex;flex-direction:column;gap:5px;margin-bottom:10px;transition:background .3s ease;}
     .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap;word-wrap:break-word;}
     .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} .other{align-self:flex-start;background:var(--other);color:#000;}
-    #input-area{display:flex;gap:5px;} #msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;background:var(--panel);border:1px solid #ccc;border-radius:6px;}
+    #input-area{display:flex;gap:5px;}
+    #msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;background:var(--panel);border:1px solid #ccc;border-radius:6px;}
 
-    /* 特殊按鈕 */
-    #danger-zone button{background:#d9534f;color:#fff;} #danger-zone{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    /* 危險動作區 */
+    #danger-zone{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    #danger-zone button{background:#d9534f;color:#fff;}
     #user-info{font-size:.9em;text-align:center;margin-top:2px;}
   </style>
 </head>
