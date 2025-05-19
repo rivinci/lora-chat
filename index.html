@@ -5,43 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoRa Chat UI</title>
   <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js">
-    // 修復登出按鈕再次綁定（因 window.onload 被提前覆蓋）
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedUser = localStorage.getItem("loggedInUser");
-      if (savedUser && getAccounts()[savedUser]) {
-        username = savedUser;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('layout').style.display = 'flex';
-        document.getElementById('user-label').textContent = `使用者：${username}`;
-      }
-
-      // 修復齒輪按鈕控制側欄顯示
-      document.getElementById('settings-toggle').onclick = () => {
-        document.getElementById('settings-panel').classList.toggle('show');
-      };
-
-      // 修復 BLE 連接按鈕響應
-      document.getElementById('connect-btn').onclick = () => {
-        document.getElementById('status').textContent = "🔄 嘗試連接 BLE... (模擬)";
-        setTimeout(() => {
-          document.getElementById('status').textContent = "✅ 已連接 ESP32 BLE";
-        }, 1500);
-      };
-
-      // 修復登出按鈕
-      const logoutBtn = document.getElementById("logout-btn");
-      if (logoutBtn) {
-        logoutBtn.onclick = () => {
-          localStorage.removeItem("loggedInUser");
-          username = "";
-          document.getElementById("layout").style.display = "none";
-          document.getElementById("login-screen").style.display = "flex";
-          clearInputs();
-        };
-      }
-    });
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body, html {
@@ -83,7 +47,6 @@
       padding: 10px 16px;
       background-color: #2a6f97;
       color: #fff;
-      position: relative;
     }
     #user-label {
       font-weight: bold;
@@ -96,6 +59,9 @@
       background: #e0e0e0;
       color: #000;
       font-size: 0.9em;
+    }
+    #rssi-indicator, #stats {
+      margin-right: 10px;
     }
     body.dark-mode #top-bar {
       background: #1f1f1f;
@@ -114,7 +80,6 @@
       z-index: 101;
       border-radius: 4px;
     }
-    #rssi-indicator { margin-right: 10px; }
     #content { display: flex; flex: 1; overflow: hidden; }
     aside {
       width: 260px;
@@ -177,18 +142,17 @@
   </div>
   <div id="layout">
     <header>
-  <div style="display: flex; flex-direction: column;">
-    <span id="user-label"></span>
-    <button id="logout-btn" style="margin-top: 4px; padding: 4px 8px; font-size: 0.8em;">登出</button>
-  </div>
-</header>
-    <button id="settings-toggle">⚙️</button>
+      <div>
+        <span id="user-label"></span>
+        <button id="logout-btn" style="margin-left: 10px;">登出</button>
+      </div>
+      <button id="settings-toggle">⚙️</button>
+    </header>
     <div id="top-bar">
-  <div style="display: flex; align-items: center; gap: 10px;">
-    <span id="rssi-indicator">📶 RSSI: - dBm</span>
-    <button id="connect-btn">連接 BLE</button>
-  </div>
-      <span id="rssi-indicator">📶 RSSI: - dBm</span>
+      <div>
+        <span id="rssi-indicator">📶 RSSI: - dBm</span>
+        <button id="connect-btn">連接 BLE</button>
+      </div>
       <span id="stats">已傳送：0｜成功：0｜失敗：0｜重送：0</span>
     </div>
     <div id="content">
@@ -228,6 +192,7 @@
   </div>
   <script>
     let username = "";
+    let stats = { sent: 0, success: 0, fail: 0, retry: 0 };
 
     function getAccounts() {
       return JSON.parse(localStorage.getItem("accounts") || "{}");
@@ -277,55 +242,61 @@
       }
     }
 
-    const toggleBtn = document.getElementById('settings-toggle');
-    const panel = document.getElementById('settings-panel');
-    toggleBtn.onclick = () => {
-      panel.classList.toggle('show');
+    window.onload = () => {
+      const savedUser = localStorage.getItem("loggedInUser");
+      if (savedUser && getAccounts()[savedUser]) {
+        username = savedUser;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('layout').style.display = 'flex';
+        document.getElementById('user-label').textContent = `使用者：${username}`;
+      }
+
+      document.getElementById('settings-toggle').onclick = () => {
+        document.getElementById('settings-panel').classList.toggle('show');
+      };
+
+      document.getElementById('connect-btn').onclick = () => {
+        const status = document.getElementById('status');
+        status.textContent = "🔄 嘗試連接藍牙...";
+        navigator.bluetooth.requestDevice({ acceptAllDevices: true })
+          .then(device => {
+            status.textContent = `✅ 已連接裝置：${device.name || '未命名裝置'}`;
+          })
+          .catch(err => {
+            status.textContent = `❌ 藍牙連線失敗：${err.message}`;
+          });
+      };
+
+      document.getElementById('logout-btn').onclick = () => {
+        localStorage.removeItem("loggedInUser");
+        username = "";
+        document.getElementById("layout").style.display = "none";
+        document.getElementById("login-screen").style.display = "flex";
+        clearInputs();
+      };
+
+      document.getElementById("send-btn").onclick = () => {
+        const msg = document.getElementById("msg-input").value.trim();
+        if (!msg) return;
+        const div = document.createElement("div");
+        div.className = 'msg me';
+        div.textContent = msg;
+        document.getElementById("chat-box").appendChild(div);
+        document.getElementById("msg-input").value = "";
+        stats.sent++;
+        document.getElementById("stats").textContent = `已傳送：${stats.sent}｜成功：${stats.success}｜失敗：${stats.fail}｜重送：${stats.retry}`;
+      };
+
+      document.getElementById("font-select").onchange = (e) => {
+        document.getElementById("chat-box").style.fontFamily = e.target.value;
+        document.getElementById("msg-input").style.fontFamily = e.target.value;
+      };
+
+      document.getElementById("bg-color").oninput = (e) => {
+        const bg = e.target.value;
+        document.getElementById("chat-box").style.backgroundColor = bg;
+      };
     };
-
-    document.getElementById("logout-btn").onclick = () => {
-  localStorage.removeItem("loggedInUser");
-  username = "";
-  document.getElementById("layout").style.display = "none";
-  document.getElementById("login-screen").style.display = "flex";
-  clearInputs();
-};
-
-window.onload = () => {
-  const savedUser = localStorage.getItem("loggedInUser");
-  if (savedUser && getAccounts()[savedUser]) {
-    username = savedUser;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('layout').style.display = 'flex';
-    document.getElementById('user-label').textContent = `使用者：${username}`;
-  }
-
-  document.getElementById('settings-toggle').onclick = () => {
-    document.getElementById('settings-panel').classList.toggle('show');
-  };
-
-  const connectBtn = document.getElementById('connect-btn');
-  if (connectBtn) {
-    connectBtn.onclick = () => {
-      const status = document.getElementById('status');
-      status.textContent = "🔄 嘗試連接 BLE... (模擬)";
-      setTimeout(() => {
-        status.textContent = "✅ 已連接 ESP32 BLE";
-      }, 1000);
-    };
-  }
-
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.onclick = () => {
-      localStorage.removeItem("loggedInUser");
-      username = "";
-      document.getElementById("layout").style.display = "none";
-      document.getElementById("login-screen").style.display = "flex";
-      clearInputs();
-    };
-  }
-};
   </script>
 </body>
 </html>
