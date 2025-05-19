@@ -49,8 +49,11 @@
     }
     #input-area {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       gap: 5px;
+    }
+    @media (min-width: 600px) {
+      #input-area { flex-direction: row; }
     }
     #msg-input {
       flex: 1;
@@ -60,6 +63,7 @@
       min-height: 4em;
       max-height: 12em;
       overflow-y: auto;
+      width: 100%;
     }
     #send-btn {
       padding: 8px 12px;
@@ -135,8 +139,161 @@
     <button id="send-btn">傳送</button>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl/nacl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util/nacl-util.min.js"></script>
   <script>
-    // JavaScript 保留原樣（已實作）
+    const chatBox = document.getElementById('chat-box');
+    const sendBtn = document.getElementById('send-btn');
+    const connectBtn = document.getElementById('connect-btn');
+    const msgInput = document.getElementById('msg-input');
+    const statusText = document.getElementById('status');
+    const fontSelect = document.getElementById('font-select');
+    const bgColorPicker = document.getElementById('bg-color');
+    const retryInput = document.getElementById('retry-count');
+
+    let bleDevice, bleServer, bleService, bleCharacteristicTX, bleCharacteristicRX, disconnectNotified = false;
+    let keyPair;
+    let stats = { sent: 0, success: 0, fail: 0, retry: 0 };
+
+    function appendMsg(from, text) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (from === "你" ? 'me' : 'other');
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function updateStats(type) {
+      stats[type]++;
+      document.getElementById("stats").textContent =
+        `已傳送：${stats.sent}｜成功：${stats.success}｜失敗：${stats.fail}｜重送：${stats.retry}`;
+    }
+
+    async function preparePayload(msg) {
+      const anon = document.getElementById("anon-mode").checked;
+      const mode = document.getElementById("mode-select").value;
+      let payload = `:mode=${mode}\n`;
+      if (anon) {
+        const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+        const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        payload += `:anon ${hex}`;
+      } else {
+        const priv = nacl.util.decodeBase64(localStorage.getItem("key-priv"));
+        const signature = nacl.sign.detached(nacl.util.decodeUTF8(msg), priv);
+        const sigBase64 = nacl.util.encodeBase64(signature);
+        const pubBase64 = localStorage.getItem("key-pub");
+        payload += `:pub ${pubBase64}\n:sig ${sigBase64}\n:msg ${msg}`;
+      }
+      return payload;
+    }
+
+    async function sendMessage(retry = 0) {
+      const msg = msgInput.value.trim();
+      if (!msg) return;
+      appendMsg("你", msg);
+      msgInput.value = "";
+      stats.sent++;
+      try {
+        const payload = await preparePayload(msg);
+        const encoder = new TextEncoder();
+        await bleCharacteristicTX.writeValue(encoder.encode(payload));
+        updateStats('success');
+      } catch (err) {
+        if (retry < parseInt(retryInput.value || "0")) {
+          updateStats('retry');
+          setTimeout(() => sendMessage(retry + 1), 500);
+        } else {
+          updateStats('fail');
+          appendMsg("系統", "❌ 封包傳送失敗");
+        }
+      }
+    }
+
+    sendBtn.onclick = () => sendMessage();
+
+    connectBtn.onclick = async () => {
+      try {
+        bleDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'ESP32' }],
+          optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
+        });
+        bleDevice.addEventListener('gattserverdisconnected', () => {
+          statusText.textContent = "❌ 藍牙已中斷";
+          if (!disconnectNotified) {
+            appendMsg("系統", "⚠️ 藍牙已中斷連線");
+            disconnectNotified = true;
+          }
+        });
+        bleServer = await bleDevice.gatt.connect();
+        bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+        bleCharacteristicTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+        bleCharacteristicRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+        await bleCharacteristicRX.startNotifications();
+        bleCharacteristicRX.addEventListener('characteristicvaluechanged', event => {
+          const value = new TextDecoder().decode(event.target.value);
+          const lines = value.split('\n');
+          let display = "", rssi = null;
+          for (let line of lines) {
+            if (line.startsWith(":msg")) display = line.replace(":msg", "").trim();
+            else if (line.startsWith(":rssi")) rssi = line.replace(":rssi", "").trim();
+          }
+          if (rssi) display += `\n📶 RSSI: ${rssi} dBm`;
+          appendMsg("ESP32", display);
+          if (document.getElementById("debug-toggle").checked) {
+            appendMsg("封包", value);
+          }
+        });
+        await bleCharacteristicTX.writeValue(new TextEncoder().encode(":subscribed"));
+        statusText.textContent = "✅ 已連接 ESP32 BLE";
+        disconnectNotified = false;
+        appendMsg("系統", "✅ 已連接 ESP32 BLE");
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = "❌ 藍牙連線失敗";
+        appendMsg("系統", "❌ BLE 連線失敗");
+      }
+    };
+
+    document.getElementById("gen-key-btn").onclick = () => {
+      keyPair = nacl.sign.keyPair();
+      const pub = nacl.util.encodeBase64(keyPair.publicKey);
+      const priv = nacl.util.encodeBase64(keyPair.secretKey);
+      localStorage.setItem("key-pub", pub);
+      localStorage.setItem("key-priv", priv);
+      alert("🔐 金鑰產生完成");
+    };
+
+    document.getElementById("export-key-btn").onclick = () => {
+      const keyData = {
+        pub: localStorage.getItem("key-pub"),
+        priv: localStorage.getItem("key-priv")
+      };
+      const blob = new Blob([JSON.stringify(keyData, null, 2)], { type: "application/json" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "keypair.json";
+      link.click();
+    };
+
+    document.getElementById("export-log-btn").onclick = () => {
+      const logs = Array.from(document.querySelectorAll('#chat-box .msg')).map(msg => msg.textContent);
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = "chat-history.json";
+      link.click();
+    };
+
+    fontSelect.addEventListener('change', () => {
+      chatBox.style.fontFamily = fontSelect.value;
+      msgInput.style.fontFamily = fontSelect.value;
+    });
+
+    bgColorPicker.addEventListener('input', () => {
+      chatBox.style.backgroundColor = bgColorPicker.value;
+    });
   </script>
 </body>
 </html>
+
+
