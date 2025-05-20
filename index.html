@@ -9,101 +9,53 @@
   <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js").catch(console.error);}</script>
   <style>
     :root {
-      --bg:#f0f4f8; --panel:#ffffff; --text:#333; --primary:#2a6f97;
-      --me:#d0f0fd; --me-txt:#003f5c; --other:#e2e2e2;
-      --btn-bg:#2a6f97; --btn-txt:#fff; --font:"Segoe UI";
-    }
-    * { box-sizing: border-box; }
-    body, button, input, select, textarea, label, div, span, h1, h2, h3, h4, h5, h6 {
-      font-family: var(--font), sans-serif;
-      color: var(--text);
-      transition: color .3s, background .3s, border-color .3s;
-    }
-    body { margin: 0; padding: 10px; background: var(--bg); }
+  --bg: #f0f4f8;
+  --panel: #ffffff;
+  --text: #333;
+  --primary: #2a6f97;
+  --me: #d0f0fd;
+  --me-txt: #003f5c;
+  --other: #e2e2e2;
+  --btn-bg: #2a6f97;
+  --btn-txt: #fff;
+  --font: "Segoe UI";
+}
 
-    input, textarea, select {
-      background: var(--panel); border: 1px solid #ccc; border-radius: 6px;
-    }
-    textarea::placeholder, input::placeholder {
-      color: var(--text); opacity: .6;
-    }
-    h2 {
-      text-align: center; margin: .3em 0 .6em; color: var(--primary);
-    }
-    button {
-      background: var(--btn-bg); color: var(--btn-txt); border: none;
-      border-radius: 6px; padding: 8px 12px; cursor: pointer;
-    }
-    button:hover { filter: brightness(1.05); }
-    button:active { filter: brightness(.9); }
+* {
+  box-sizing: border-box;
+}
 
-    #auth-area {
-      max-width: 420px; margin: 0 auto 20px; background: var(--panel);
-      padding: 20px; border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.08);
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    #auth-msg {
-      text-align: center; font-size: .9em; color: #c00; min-height: 1.2em;
-    }
-    #main-ui { display: none; }
+body, button, input, select, textarea, label, div, span, h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font), sans-serif;
+  color: var(--text);
+  transition: color .3s, background .3s, border-color .3s;
+}
 
-    #chat-box {
-      border: 1px solid #ccc; padding: 10px; height: 50vh;
-      overflow-y: scroll; background: var(--panel);
-      display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;
-    }
-    .msg {
-      max-width: 70%; padding: 8px 12px; border-radius: 10px; font-size: 1em;
-      white-space: pre-wrap; word-wrap: break-word;
-    }
-    .me { align-self: flex-end; background: var(--me); color: var(--me-txt); }
-    .other { align-self: flex-start; background: var(--other); color: var(--text); }
+body {
+  margin: 0;
+  padding: 10px;
+  background: var(--bg);
+}
 
-    #input-area {
-      display: flex; gap: 5px; align-items: center; padding: 8px;
-      background: var(--panel);
-    }
-    #msg-input {
-      flex: 1; resize: none; padding: 8px; font-size: 1em;
-      max-height: 40vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    }
+h2 {
+  text-align: center;
+  margin: .3em 0 .6em;
+  color: var(--primary);
+}
 
-    @media screen and (max-width: 768px) {
-      #input-area {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        z-index: 1000;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-      }
-      #main-ui { padding-bottom: 140px; }
-    }
-	button.btn, label.btn {
-  background: var(--btn-bg);
-  color: var(--btn-txt);
-  border: none;
+input, textarea, select {
+  background: var(--panel);
+  border: 1px solid #ccc;
   border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background .3s, color .3s, filter .2s;
+  padding: 8px;
+  width: 100%;
 }
-button.btn:hover, label.btn:hover {
-  filter: brightness(1.05);
+
+textarea::placeholder, input::placeholder {
+  color: var(--text);
+  opacity: .6;
 }
-button.btn:active, label.btn:active {
-  filter: brightness(.9);
-}
-@media screen and (max-width: 768px) {
-  button, label.btn {
-    flex: 1 1 auto; /* 讓按鈕自動縮放不擠出畫面 */
-    min-width: 120px;
-  }
-  #settings {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-}
+
 .btn {
   background-color: var(--btn-bg);
   color: var(--btn-txt);
@@ -114,17 +66,139 @@ button.btn:active, label.btn:active {
   font-size: 1em;
   transition: background 0.3s, color 0.3s;
 }
+
 .btn:hover {
   filter: brightness(1.1);
 }
+
 .btn:active {
   filter: brightness(0.95);
 }
 
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.centered {
+  text-align: center;
+  margin-top: 10px;
+}
+
+#auth-area {
+  max-width: 420px;
+  margin: 0 auto 20px;
+  background: var(--panel);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#auth-msg {
+  text-align: center;
+  font-size: .9em;
+  color: #c00;
+  min-height: 1.2em;
+}
+
+#main-ui {
+  display: none;
+}
+
+#chat-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 50vh;
+  overflow-y: scroll;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.msg {
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 1em;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.me {
+  align-self: flex-end;
+  background: var(--me);
+  color: var(--me-txt);
+}
+
+.other {
+  align-self: flex-start;
+  background: var(--other);
+  color: var(--text);
+}
+
+#input-area {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 8px;
+  background: var(--panel);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+#msg-input {
+  flex: 1;
+  resize: none;
+  padding: 8px;
+  font-size: 1em;
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#main-ui {
+  padding-bottom: 140px;
+}
+
+#settings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.status-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+}
   </style>
 </head>
 
  
+
 
 
 <body>
@@ -134,49 +208,38 @@ button.btn:active, label.btn:active {
   <div id="auth-area">
     <input id="auth-username" placeholder="使用者名稱" />
     <input id="auth-password" type="password" placeholder="密碼" />
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <div class="button-group">
       <button class="btn" id="login-btn">登入</button>
       <button class="btn" id="register-btn">註冊</button>
     </div>
-
-    <!-- ✅ 登入區塊內保留匯入功能並置中 -->
-    <div style="text-align:center; margin-top:10px;">
-      <label class="btn" style="display:inline-block; cursor:pointer;">
+    <div class="centered">
+      <label class="btn">
         📥 匯入帳號
         <input type="file" id="import-acc-input-login" accept=".json" style="display:none;" />
       </label>
     </div>
-
     <div id="auth-msg"></div>
   </div>
 
   <!-- 主介面區塊 -->
   <div id="main-ui">
     <div id="top-bar">
-      <!-- 藍牙狀態 + 按鈕同列（按鈕在左） -->
-      <div style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div class="status-group">
         <button class="btn" id="connect-btn">連接 BLE</button>
         <div id="status">尚未連接藍牙</div>
       </div>
-	  
-	  <!-- 登出 + 刪除 + 使用者名稱（按鈕在左） -->
-	<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
-		<button class="btn" id="logout-btn">登出</button>
-		<button class="btn" id="delete-account-btn">🗑️ 刪除帳號</button>
-		<div id="user-info">使用者：</div>
-	</div>
-
-<!-- ✅ 匯出 / 匯入區塊置中顯示 -->
-<div style="text-align:center; margin-top:10px;">
-  <button class="btn" id="export-acc-btn">📤 匯出目前帳號</button>
-  <label class="btn" style="display:inline-block; cursor:pointer;">
-    📥 匯入帳號
-    <input type="file" id="import-acc-input-main" accept=".json" style="display:none;" />
-  </label>
-</div>
-
-      
-      <!-- 主題與字體設定 -->
+      <div class="button-group">
+        <button class="btn" id="logout-btn">登出</button>
+        <button class="btn" id="delete-account-btn">🗑️ 刪除帳號</button>
+        <div id="user-info">使用者：</div>
+      </div>
+      <div class="centered">
+        <button class="btn" id="export-acc-btn">📤 匯出目前帳號</button>
+        <label class="btn">
+          📥 匯入帳號
+          <input type="file" id="import-acc-input-main" accept=".json" style="display:none;" />
+        </label>
+      </div>
       <div id="settings">
         <label>主題：
           <select id="theme-select">
@@ -202,22 +265,16 @@ button.btn:active, label.btn:active {
     <!-- 聊天訊息區 -->
     <div id="chat-box"></div>
 
-    <!-- ✅ 聊天室內匯入 + 匯出 -->
-    <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:10px;">
-      <button class="btn" id="export-acc-btn">📤 匯出目前帳號</button>
-      <label class="btn" style="cursor:pointer;">
-        📥 匯入帳號
-        <input type="file" id="import-acc-input-main" accept=".json" style="display:none;" />
-      </label>
-    </div>
-
     <!-- 輸入與傳送 -->
     <div id="input-area">
       <textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea>
       <button class="btn" id="send-btn">傳送</button>
     </div>
   </div>
+
+  <script src="script.js"></script>
 </body>
+
 
 
 
