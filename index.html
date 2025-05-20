@@ -45,7 +45,7 @@
     <div id="danger-zone"><button id="delete-account-btn">🗑️ 刪除帳號</button><button id="logout-btn">登出</button></div>
   </div>
 <script>
-const K={ACC:"accounts",LOGIN:"loggedInUser",HIS:"lora-chat-history",INPUT:"lora-chat-input",THEME:"lora-chat-theme",FONT:"lora-chat-font"};
+const K={ACC:"accounts",LOGIN:"loggedInUser",THEME:"lora-chat-theme",FONT:"lora-chat-font"};
 const $=id=>document.getElementById(id);
 /* 主題 */
 const THEMES={default:{bg:"#f0f4f8",panel:"#fff",text:"#333",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#e2e2e2",btn:"#2a6f97",btnTxt:"#fff"},dark:{bg:"#1e1e1e",panel:"#2d2d2d",text:"#e0e0e0",primary:"#81c1ff",me:"#3b78ff",meTxt:"#fff",other:"#555",btn:"#3b78ff",btnTxt:"#fff"},daisy:{bg:"#fff9e6",panel:"#fff",text:"#333",primary:"#e2a000",me:"#ffe4a8",meTxt:"#924e00",other:"#e2e2e2",btn:"#e2a000",btnTxt:"#fff"},sky:{bg:"#e7f3ff",panel:"#fff",text:"#003f5c",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#cadced",btn:"#2a6f97",btnTxt:"#fff"},mint:{bg:"#eaf7ea",panel:"#fff",text:"#2b4f36",primary:"#2f8f5b",me:"#c6ecc6",meTxt:"#134a2f",other:"#d0d0d0",btn:"#2f8f5b",btnTxt:"#fff"}};
@@ -57,7 +57,31 @@ function login(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){a
 function delAcc(){if(!confirm("確定刪除帳號？"))return;saveAcc(loadAcc().filter(e=>e.u!==getLogin()));logout();}
 loginBtn.onclick=login;registerBtn.onclick=register;logoutBtn.onclick=logout;deleteBtn.onclick=delAcc;
 /* Chat & storage */
-const chatBox=$("chat-box"),msgInput=$("msg-input"),sendBtn=$("send-btn");function appendMsg(from,txt){const d=document.createElement("div");d.className="msg "+(from==="你"?"me":"other");d.textContent=txt;chatBox.appendChild(d);chatBox.scrollTop=chatBox.scrollHeight;localStorage.setItem(K.HIS,chatBox.innerHTML);}function loadHistory(){const h=localStorage.getItem(K.HIS);if(h)chatBox.innerHTML=h;}function loadInput(){const t=localStorage.getItem(K.INPUT);if(t)msgInput.value=t;}msgInput.oninput=()=>localStorage.setItem(K.INPUT,msgInput.value);
+const chatBox=$("chat-box"),msgInput=$("msg-input"),sendBtn=$("send-btn");
+function appendMsg(from, txt) {
+  const d = document.createElement("div");
+  d.className = "msg " + (from === "你" ? "me" : "other");
+  d.textContent = txt;
+  chatBox.appendChild(d);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  const u = getLogin();
+  if (u) localStorage.setItem(`history_${u}`, chatBox.innerHTML);
+}
+function loadHistory() {
+  const u = getLogin();
+  if (!u) return;
+  const h = localStorage.getItem(`history_${u}`);
+  if (h) chatBox.innerHTML = h;
+}
+function loadInput() {
+  const u = getLogin();
+  const t = localStorage.getItem(`input_${u}`);
+  if (t) msgInput.value = t;
+}
+msgInput.oninput = () => {
+  const u = getLogin();
+  if (u) localStorage.setItem(`input_${u}`, msgInput.value);
+};d.className="msg "+(from==="你"?"me":"other");d.textContent=txt;chatBox.appendChild(d);chatBox.scrollTop=chatBox.scrollHeight;localStorage.setItem(K.HIS,chatBox.innerHTML);}function loadHistory(){const h=localStorage.getItem(K.HIS);if(h)chatBox.innerHTML=h;}function loadInput(){const t=localStorage.getItem(K.INPUT);if(t)msgInput.value=t;}msgInput.oninput=()=>localStorage.setItem(K.INPUT,msgInput.value);
 /* BLE section */
 let bleDevice,bleServer,bleService,bleTX,bleRX,discNotified=false;const statusText=$("status"),connectBtn=$("connect-btn");async function connectBLE(){try{bleDevice=await navigator.bluetooth.requestDevice({acceptAllDevices: true, optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]});
 if (bleDevice.adData && bleDevice.adData.rssi !== undefined) {
