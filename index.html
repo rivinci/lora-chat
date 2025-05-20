@@ -312,7 +312,13 @@ document.getElementById("import-acc-input").addEventListener("change", e => {
       const current = loadAcc();
       const merged = [...current];
       imported.forEach(newAcc => {
-        if (!current.find(e => e.u === newAcc.u)) {
+        const existingAccIndex = current.findIndex(e => e.u === newAcc.u);
+        if (existingAccIndex !== -1) {
+          const overwrite = confirm(`帳號 ${newAcc.u} 已存在，是否要覆蓋？`);
+          if (overwrite) {
+            merged[existingAccIndex] = newAcc;
+          }
+        } else {
           merged.push(newAcc);
         }
       });
@@ -444,16 +450,35 @@ msgInput.addEventListener("focus", () => {
 });
 
 // ======= 匯出帳號為 JSON 檔 =======
-$("export-acc-btn").onclick = () => {
-  const dataStr = JSON.stringify(loadAcc(), null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
+document.getElementById("export-acc-btn").onclick = () => {
+  const currentUser = getLogin();
+  if (!currentUser) {
+    alert("⚠️ 未登入，無法匯出帳號。");
+    return;
+  }
+
+  const accList = loadAcc();
+  const account = accList.find(acc => acc.u === currentUser);
+  if (!account) {
+    alert("❌ 找不到登入帳號");
+    return;
+  }
+
+  const pw = prompt("請再次輸入密碼以匯出帳號：");
+  if (!pw || sha256(pw) !== account.h) {
+    alert("❌ 密碼錯誤，無法匯出");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify([account], null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "lora-chat-accounts.json";
+  a.download = `${account.u}-account.json`;
   a.click();
   URL.revokeObjectURL(url);
-}
+};
+
 
 </script>
 </body>
