@@ -95,14 +95,14 @@
     <button id="register-btn">註冊</button>
   </div>
 
-  <!-- ✅ 新增帳號備份功能按鈕 -->
-  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-    <button id="export-acc-btn">📤 匯出帳號</button>
-    <label style="cursor:pointer;">
-      📥 匯入帳號
-      <input type="file" id="import-acc-input" accept=".json" style="display:none;" />
-    </label>
-  </div>
+<!-- ✅ 登入區塊內保留匯入功能並置中 -->
+<div style="text-align:center; margin-top:10px;">
+  <label style="cursor:pointer;">
+    📥 匯入帳號
+    <input type="file" id="import-acc-input-login" accept=".json" style="display:none;" />
+  </label>
+</div>
+
 
   <div id="auth-msg"></div>
 </div>
@@ -150,6 +150,15 @@
 
     <!-- 聊天訊息區 -->
     <div id="chat-box"></div>
+	<!-- ✅ 聊天室內匯入 + 匯出（登入後區域） -->
+	<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:10px;">
+		<button id="export-acc-btn">📤 匯出目前帳號</button>
+		<label style="cursor:pointer;">
+		📥 匯入帳號
+		<input type="file" id="import-acc-input-main" accept=".json" style="display:none;" />
+			</label>
+	</div>
+
 
     <!-- 輸入與傳送 -->
     <div id="input-area">
@@ -367,6 +376,62 @@ document.getElementById("import-acc-input").addEventListener("change", e => {
 });
 
 
+$("export-acc-btn").onclick = () => {
+  const currentUser = getLogin();
+  if (!currentUser) {
+    alert("⚠️ 尚未登入");
+    return;
+  }
+
+  const accList = loadAcc();
+  const account = accList.find(acc => acc.u === currentUser);
+  if (!account) {
+    alert("❌ 找不到目前登入帳號");
+    return;
+  }
+
+  const pw = prompt("🔐 請再次輸入密碼以匯出帳號：");
+  if (!pw || sha256(pw) !== account.h) {
+    alert("❌ 密碼錯誤，無法匯出");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify([account], null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${account.u}-account.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+function handleAccountImport(file) {
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const imported = JSON.parse(evt.target.result);
+      if (!Array.isArray(imported)) throw "格式錯誤";
+      const current = loadAcc();
+      const merged = [...current];
+      imported.forEach(newAcc => {
+        if (!current.find(e => e.u === newAcc.u)) {
+          merged.push(newAcc);
+        }
+      });
+      saveAcc(merged);
+      alert("✅ 匯入完成！");
+    } catch (err) {
+      alert("❌ 匯入失敗，請確認檔案格式正確！");
+    }
+  };
+  reader.readAsText(file);
+}
+
+$("import-acc-input-login").addEventListener("change", e => {
+  if (e.target.files[0]) handleAccountImport(e.target.files[0]);
+});
+$("import-acc-input-main").addEventListener("change", e => {
+  if (e.target.files[0]) handleAccountImport(e.target.files[0]);
+});
 
 /***************************************************************************************/
 
