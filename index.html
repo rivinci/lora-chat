@@ -56,7 +56,19 @@ textarea::placeholder, input::placeholder {
   opacity: .6;
 }
 
-
+/* === 按鈕樣式（小型化） === */
+.btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-txt);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn:active { filter: brightness(0.9); }
 
 .button-group {
   display: flex;
@@ -92,6 +104,7 @@ textarea::placeholder, input::placeholder {
 
 #main-ui {
   display: none;
+  padding-bottom: 140px;
 }
 
 #chat-box {
@@ -114,32 +127,45 @@ textarea::placeholder, input::placeholder {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
-
 .me {
   align-self: flex-end;
   background: var(--me);
   color: var(--me-txt);
 }
-
 .other {
   align-self: flex-start;
   background: var(--other);
   color: var(--text);
 }
 
+/* === 輸入欄 + 貼齊底部 === */
+#input-area {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  padding: 6px 10px;
+  background: var(--panel);
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
 
+/* === 輸入欄預設 5 行，可捲動 === */
 #msg-input {
   flex: 1;
   resize: none;
   padding: 8px;
   font-size: 1em;
-  max-height: 40vh;
+  height: auto;
+  min-height: calc(1.4em * 5 + 16px); /* 約 5 行 + padding */
+  max-height: 35vh;
   overflow-y: auto;
+  border-radius: 6px;
+  scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
-}
-
-#main-ui {
-  padding-bottom: 140px;
 }
 
 #settings {
@@ -161,9 +187,12 @@ textarea::placeholder, input::placeholder {
 @media screen and (max-width: 768px) {
   .btn {
     flex: 1 1 auto;
-    min-width: 120px;
+    min-width: 100px;
+    font-size: 0.85em;
+    padding: 5px 10px;
   }
 }
+
 
   </style>
 </head>
@@ -238,7 +267,7 @@ textarea::placeholder, input::placeholder {
 
     <!-- 輸入與傳送 -->
     <div id="input-area">
-      <textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea>
+      <textarea id="msg-input" placeholder="輸入訊息..." rows="5"></textarea>
       <button class="btn" id="send-btn">傳送</button>
     </div>
   </div>
