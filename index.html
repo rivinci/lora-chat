@@ -28,6 +28,30 @@
     padding-bottom: 160px;
   }
 }
+/* 手機裝置輸入欄固定與滑動設定 */
+@media screen and (max-width: 768px) {
+  #input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    padding: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+  }
+
+  #main-ui {
+    padding-bottom: 160px;
+  }
+}
+
+#msg-input {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 40vh; /* 可依需要調整 */
+}
+
   </style>
 </head>
 <body>
