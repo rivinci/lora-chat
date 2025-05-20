@@ -93,7 +93,34 @@ button.btn:hover, label.btn:hover {
 button.btn:active, label.btn:active {
   filter: brightness(.9);
 }
- 
+@media screen and (max-width: 768px) {
+  button, label.btn {
+    flex: 1 1 auto; /* 讓按鈕自動縮放不擠出畫面 */
+    min-width: 120px;
+  }
+  #settings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+.btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-txt);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background 0.3s, color 0.3s;
+}
+.btn:hover {
+  filter: brightness(1.1);
+}
+.btn:active {
+  filter: brightness(0.95);
+}
+
   </style>
 </head>
 
@@ -131,14 +158,24 @@ button.btn:active, label.btn:active {
         <button class="btn" id="connect-btn">連接 BLE</button>
         <div id="status">尚未連接藍牙</div>
       </div>
+	  
+	  <!-- 登出 + 刪除 + 使用者名稱（按鈕在左） -->
+	<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
+		<button class="btn" id="logout-btn">登出</button>
+		<button class="btn" id="delete-account-btn">🗑️ 刪除帳號</button>
+		<div id="user-info">使用者：</div>
+	</div>
 
-      <!-- 登出 + 刪除 + 使用者名稱（按鈕在左） -->
-      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
-        <button class="btn" id="logout-btn">登出</button>
-        <button class="btn" id="delete-account-btn">🗑️ 刪除帳號</button>
-        <div id="user-info">使用者：</div>
-      </div>
+<!-- ✅ 匯出 / 匯入區塊置中顯示 -->
+<div style="text-align:center; margin-top:10px;">
+  <button class="btn" id="export-acc-btn">📤 匯出目前帳號</button>
+  <label class="btn" style="display:inline-block; cursor:pointer;">
+    📥 匯入帳號
+    <input type="file" id="import-acc-input-main" accept=".json" style="display:none;" />
+  </label>
+</div>
 
+      
       <!-- 主題與字體設定 -->
       <div id="settings">
         <label>主題：
