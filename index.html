@@ -192,14 +192,10 @@ textarea::placeholder, input::placeholder {
     padding: 5px 10px;
   }
 }
-
-
-
   </style>
 </head>
 
  
-
 
 
 <body>
@@ -274,16 +270,6 @@ textarea::placeholder, input::placeholder {
   </div>
 
   <script src="script.js"></script>
-  <script>
-  const inputArea = document.getElementById("input-area");
-  const msgInput = document.getElementById("msg-input");
-
-  msgInput.addEventListener("focus", () => {
-    setTimeout(() => {
-      inputArea.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 200); // 略延遲等鍵盤彈出
-  });
-</script>
 
 
 
@@ -325,6 +311,15 @@ fontSel.onchange = () => {
   document.documentElement.style.setProperty("--font", fontSel.value);
   localStorage.setItem(K.FONT, fontSel.value);
 };
+  const inputArea = document.getElementById("input-area");
+  const msgInput = document.getElementById("msg-input");
+
+  msgInput.addEventListener("focus", () => {
+    setTimeout(() => {
+      inputArea.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 200); // 略延遲等鍵盤彈出
+  });
+
 
 // ========== localStorage 檢查 ==========
 try {
