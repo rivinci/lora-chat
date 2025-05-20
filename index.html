@@ -100,18 +100,19 @@
   <!-- 主介面區塊 -->
   <div id="main-ui">
     <div id="top-bar">
-      <!-- 藍牙狀態 + 按鈕同列 -->
-      <div style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;">
-        <div id="status">尚未連接藍牙</div>
-        <button id="connect-btn">連接 BLE</button>
-      </div>
+      <!-- 藍牙狀態 + 按鈕同列（按鈕在左） -->
+	  <div style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;">
+		<button id="connect-btn">連接 BLE</button>
+		<div id="status">尚未連接藍牙</div>
+	</div>
 
-      <!-- 使用者 + 登出 + 刪除帳號 下一列 -->
-      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
-        <div id="user-info">使用者：</div>
-        <button id="logout-btn">登出</button>
-        <button id="delete-account-btn">🗑️ 刪除帳號</button>
-      </div>
+	<!-- 登出 + 刪除 + 使用者名稱（按鈕在左） -->
+	<div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
+		<button id="logout-btn">登出</button>
+		<button id="delete-account-btn">🗑️ 刪除帳號</button>
+		<div id="user-info">使用者：</div>
+	</div>
+
 
       <!-- 主題與字體設定 -->
       <div id="settings">
