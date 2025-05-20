@@ -269,24 +269,31 @@ loginBtn.onclick = login;
 registerBtn.onclick = register;
 logoutBtn.onclick = logout;
 deleteBtn.onclick = delAcc;
-<div id="auth-area">
-  <input id="auth-username" placeholder="使用者名稱" />
-  <input id="auth-password" type="password" placeholder="密碼" />
-  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-    <button id="login-btn">登入</button>
-    <button id="register-btn">註冊</button>
-  </div>
+// ======= 匯入帳號 JSON 檔案 =======
+$("import-acc-input").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const imported = JSON.parse(evt.target.result);
+      if (!Array.isArray(imported)) throw "格式錯誤";
+      const current = loadAcc();
+      const merged = [...current];
+      imported.forEach(newAcc => {
+        if (!current.find(e => e.u === newAcc.u)) {
+          merged.push(newAcc);
+        }
+      });
+      saveAcc(merged);
+      alert("✅ 匯入完成！");
+    } catch (err) {
+      alert("❌ 匯入失敗，請確認檔案格式正確！");
+    }
+  };
+  reader.readAsText(file);
+});
 
-  <!-- ✅ 新增帳號備份功能按鈕 -->
-  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-    <button id="export-acc-btn">📤 匯出帳號</button>
-    <label style="cursor:pointer;">
-      📥 匯入帳號
-      <input type="file" id="import-acc-input" accept=".json" style="display:none;" />
-    </label>
-  </div>
-
-  <div id="auth-msg"></div>
 </div>
 
 /***************************************************************************************/
@@ -404,6 +411,19 @@ msgInput.addEventListener("focus", () => {
     msgInput.scrollIntoView({ behavior: "smooth", block: "center" });
   }, 300);
 });
+
+// ======= 匯出帳號為 JSON 檔 =======
+$("export-acc-btn").onclick = () => {
+  const dataStr = JSON.stringify(loadAcc(), null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "lora-chat-accounts.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 </script>
 </body>
 </html>
