@@ -269,8 +269,39 @@ loginBtn.onclick = login;
 registerBtn.onclick = register;
 logoutBtn.onclick = logout;
 deleteBtn.onclick = delAcc;
+// ======= 匯出目前登入帳號（需再次輸入密碼） =======
+document.getElementById("export-acc-btn").onclick = () => {
+  const currentUser = getLogin();
+  if (!currentUser) {
+    alert("⚠️ 未登入，無法匯出帳號。");
+    return;
+  }
+
+  const accList = loadAcc();
+  const account = accList.find(acc => acc.u === currentUser);
+  if (!account) {
+    alert("❌ 找不到登入帳號");
+    return;
+  }
+
+  const pw = prompt("請再次輸入密碼以匯出帳號：");
+  if (!pw || sha256(pw) !== account.h) {
+    alert("❌ 密碼錯誤，無法匯出");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify([account], null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${account.u}-account.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+
 // ======= 匯入帳號 JSON 檔案 =======
-$("import-acc-input").addEventListener("change", e => {
+document.getElementById("import-acc-input").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -293,6 +324,7 @@ $("import-acc-input").addEventListener("change", e => {
   };
   reader.readAsText(file);
 });
+
 
 
 /***************************************************************************************/
