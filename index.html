@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoRa Chat UI (主題 + 帳號 + BLE0)</title>
+  <title>LoRa Chat UI (主題 + 帳號 + BLE)</title>
   <link rel="manifest" href="manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
   <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js").catch(console.error);}</script>
@@ -192,10 +192,14 @@ textarea::placeholder, input::placeholder {
     padding: 5px 10px;
   }
 }
+
+
+
   </style>
 </head>
 
  
+
 
 
 <body>
@@ -270,6 +274,9 @@ textarea::placeholder, input::placeholder {
   </div>
 
   <script src="script.js"></script>
+ 
+  
+
 
 
 
@@ -311,7 +318,9 @@ fontSel.onchange = () => {
   document.documentElement.style.setProperty("--font", fontSel.value);
   localStorage.setItem(K.FONT, fontSel.value);
 };
-  const inputArea = document.getElementById("input-area");
+
+
+const inputArea = document.getElementById("input-area");
   const msgInput = document.getElementById("msg-input");
 
   msgInput.addEventListener("focus", () => {
@@ -319,8 +328,9 @@ fontSel.onchange = () => {
       inputArea.scrollIntoView({ behavior: "smooth", block: "end" });
     }, 200); // 略延遲等鍵盤彈出
   });
-
-
+  
+  
+  
 // ========== localStorage 檢查 ==========
 try {
   const testKey = "__test__";
