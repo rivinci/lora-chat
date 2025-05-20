@@ -145,12 +145,12 @@ textarea::placeholder, input::placeholder {
   align-items: flex-end;
   padding: 6px 10px;
   background: var(--panel);
-  position: sticky;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  z-index: 999;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
 }
 
 /* === 輸入欄預設 5 行，可捲動 === */
@@ -192,6 +192,7 @@ textarea::placeholder, input::placeholder {
     padding: 5px 10px;
   }
 }
+
 
 
   </style>
@@ -273,6 +274,17 @@ textarea::placeholder, input::placeholder {
   </div>
 
   <script src="script.js"></script>
+  <script>
+  const inputArea = document.getElementById("input-area");
+  const msgInput = document.getElementById("msg-input");
+
+  msgInput.addEventListener("focus", () => {
+    setTimeout(() => {
+      inputArea.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 200); // 略延遲等鍵盤彈出
+  });
+</script>
+
 
 
 
