@@ -455,7 +455,23 @@ $("export-acc-btn").addEventListener("click", () => {
   a.click();
   URL.revokeObjectURL(url);
 });
-    
+  if (window.visualViewport) {
+  const fixInputForMobile = () => {
+    const viewport = window.visualViewport;
+    const inputArea = $("input-area");
+
+    const adjust = () => {
+      const bottomOffset = window.innerHeight - viewport.height - viewport.offsetTop;
+      inputArea.style.bottom = bottomOffset > 0 ? `${bottomOffset}px` : "0px";
+    };
+
+    viewport.addEventListener("resize", adjust);
+    viewport.addEventListener("scroll", adjust);
+    adjust(); // 初始呼叫一次
+  };
+  fixInputForMobile();
+}
+  
 
   </script>
 </body>
