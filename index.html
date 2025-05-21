@@ -8,85 +8,15 @@
   <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
   <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js").catch(console.error);}</script>
   <style>
-    :root {
-      --bg:#f0f4f8; --panel:#ffffff; --text:#333; --primary:#2a6f97;
-      --me:#d0f0fd; --me-txt:#003f5c; --other:#e2e2e2;
-      --btn-bg:#2a6f97; --btn-txt:#fff; --font:"Segoe UI";
-    }
-    * { box-sizing: border-box; }
-    body, button, input, select, textarea, label, div, span, h1, h2, h3, h4, h5, h6 {
-      font-family: var(--font), sans-serif;
-      color: var(--text);
-      transition: color .3s, background .3s, border-color .3s;
-    }
-    body { margin: 0; padding: 10px; background: var(--bg); }
-
-    input, textarea, select {
-      background: var(--panel); border: 1px solid #ccc; border-radius: 6px;
-    }
-    textarea::placeholder, input::placeholder {
-      color: var(--text); opacity: .6;
-    }
-    h2 {
-      text-align: center; margin: .3em 0 .6em; color: var(--primary);
-    }
-    button {
-      background: var(--btn-bg); color: var(--btn-txt); border: none;
-      border-radius: 6px; padding: 8px 12px; cursor: pointer;
-    }
-    button:hover { filter: brightness(1.05); }
-    button:active { filter: brightness(.9); }
-
-    #auth-area {
-      max-width: 420px; margin: 0 auto 20px; background: var(--panel);
-      padding: 20px; border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.08);
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    #auth-msg {
-      text-align: center; font-size: .9em; color: #c00; min-height: 1.2em;
-    }
-    #main-ui { display: none; }
-
-    #chat-box {
-      border: 1px solid #ccc; padding: 10px; height: 50vh;
-      overflow-y: scroll; background: var(--panel);
-      display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;
-    }
-    .msg {
-      max-width: 70%; padding: 8px 12px; border-radius: 10px; font-size: 1em;
-      white-space: pre-wrap; word-wrap: break-word;
-    }
-    .me { align-self: flex-end; background: var(--me); color: var(--me-txt); }
-    .other { align-self: flex-start; background: var(--other); color: var(--text); }
-
-    #input-area {
-      display: flex; gap: 5px; align-items: center; padding: 8px;
-      background: var(--panel);
-    }
-    #msg-input {
-      flex: 1; resize: none; padding: 8px; font-size: 1em;
-      max-height: 40vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    }
-
-    @media screen and (max-width: 768px) {
-      #input-area {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        z-index: 1000;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-      }
-      #main-ui { padding-bottom: 140px; }
-    }
+    :root{--bg:#f0f4f8;--panel:#ffffff;--text:#333;--primary:#2a6f97;--me:#d0f0fd;--me-txt:#003f5c;--other:#e2e2e2;--btn-bg:#2a6f97;--btn-txt:#fff;--font:"Segoe UI";}
+    *{box-sizing:border-box;}
+    body,button,input,select,textarea,label,div,span,h1,h2,h3,h4,h5,h6{font-family:var(--font),sans-serif;color:var(--text);transition:color .3s,background .3s,border-color .3s;}
+    body{margin:0;padding:10px;background:var(--bg);}input,textarea,select{background:var(--panel);border:1px solid #ccc;border-radius:6px;}select,option{background:var(--panel);color:var(--text);}textarea::placeholder,input::placeholder{color:var(--text);opacity:.6;}
+    h2{text-align:center;margin:.3em 0 .6em;color:var(--primary);}button{background:var(--btn-bg);color:var(--btn-txt);border:none;border-radius:6px;padding:8px 12px;cursor:pointer;}button:hover{filter:brightness(1.05);}button:active{filter:brightness(.9);}#auth-area{max-width:420px;margin:0 auto 20px;background:var(--panel);padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:10px;}#auth-msg{text-align:center;font-size:.9em;color:#c00;min-height:1.2em;}#main-ui{display:none;}#status{text-align:center;margin-bottom:5px;font-size:.9em;font-weight:600;}#top-bar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:10px;}#settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}label{font-size:.9em;font-weight:600;}#chat-box{border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;background:var(--panel);display:flex;flex-direction:column;gap:5px;margin-bottom:10px;} .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap;word-wrap:break-word;} .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} .other{align-self:flex-start;background:var(--other);color:var(--text);}#input-area{display:flex;gap:5px;}#msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;}#danger-zone{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}#danger-zone button{background:#d9534f;color:#fff;}#user-info{font-size:.9em;text-align:center;margin-top:2px;font-weight:600;}
   </style>
 </head>
-
- 
-
-
 <body>
   <h2>LoRa Chat (Web UI)</h2>
-
-  <!-- 登入區塊 -->
   <div id="auth-area">
     <input id="auth-username" placeholder="使用者名稱" />
     <input id="auth-password" type="password" placeholder="密碼" />
@@ -97,282 +27,91 @@
     <div id="auth-msg"></div>
   </div>
 
-  <!-- 主介面區塊 -->
   <div id="main-ui">
     <div id="top-bar">
-      <!-- 藍牙狀態 + 按鈕同列 -->
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-        <div id="status">尚未連接藍牙</div>
-        <button id="connect-btn">連接 BLE</button>
-      </div>
-
-      <!-- 使用者 + 登出 + 刪除帳號 下一列 -->
-      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
-        <div id="user-info">使用者：</div>
-        <button id="logout-btn">登出</button>
-        <button id="delete-account-btn">🗑️ 刪除帳號</button>
-      </div>
-
-      <!-- 主題與字體設定 -->
+      <div id="status">尚未連接藍牙</div>
+      <button id="connect-btn">連接 BLE</button>
       <div id="settings">
         <label>主題：
-          <select id="theme-select">
-            <option value="default">經典淺色</option>
-            <option value="dark">深色</option>
-            <option value="daisy">雛菊淡黃</option>
-            <option value="sky">天空藍</option>
-            <option value="mint">薄荷綠</option>
-          </select>
+          <select id="theme-select"><option value="default">經典淺色</option><option value="dark">深色</option><option value="daisy">雛菊淡黃</option><option value="sky">天空藍</option><option value="mint">薄荷綠</option></select>
         </label>
         <label>字體：
-          <select id="font-select">
-            <option value="Segoe UI">Segoe UI</option>
-            <option value="Arial">Arial</option>
-            <option value="Courier New">Courier New</option>
-            <option value="Noto Sans TC">Noto Sans TC</option>
-            <option value="serif">Serif</option>
-          </select>
+          <select id="font-select"><option value="Segoe UI">Segoe UI</option><option value="Arial">Arial</option><option value="Courier New">Courier New</option><option value="Noto Sans TC">Noto Sans TC</option><option value="serif">Serif</option></select>
         </label>
       </div>
     </div>
 
-    <!-- 聊天訊息區 -->
     <div id="chat-box"></div>
-
-    <!-- 輸入與傳送 -->
-    <div id="input-area">
-      <textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea>
-      <button id="send-btn">傳送</button>
-    </div>
+    <div id="input-area"><textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea><button id="send-btn">傳送</button></div>
+    <div id="user-info"></div>
+    <div id="danger-zone"><button id="delete-account-btn">🗑️ 刪除帳號</button><button id="logout-btn">登出</button></div>
   </div>
 
-
-
-
-
-
-
-
-
-
-
- 
-
-
 <script>
-const K = {
-  ACC: "accounts",
-  LOGIN: "loggedInUser",
-  THEME: "lora-chat-theme",
-  FONT: "lora-chat-font"
-};
-const $ = id => document.getElementById(id);
+const K={ACC:"accounts",LOGIN:"loggedInUser",THEME:"lora-chat-theme",FONT:"lora-chat-font"};
+const $=id=>document.getElementById(id);
 
-/* ======= 主題與字體切換 ======= */
-const THEMES = {
-  default: { bg:"#f0f4f8", panel:"#fff", text:"#333", primary:"#2a6f97", me:"#d0f0fd", meTxt:"#003f5c", other:"#e2e2e2", btn:"#2a6f97", btnTxt:"#fff" },
-  dark: { bg:"#1e1e1e", panel:"#2d2d2d", text:"#e0e0e0", primary:"#81c1ff", me:"#3b78ff", meTxt:"#fff", other:"#555", btn:"#3b78ff", btnTxt:"#fff" },
-  daisy: { bg:"#fff9e6", panel:"#fff", text:"#333", primary:"#e2a000", me:"#ffe4a8", meTxt:"#924e00", other:"#e2e2e2", btn:"#e2a000", btnTxt:"#fff" },
-  sky: { bg:"#e7f3ff", panel:"#fff", text:"#003f5c", primary:"#2a6f97", me:"#d0f0fd", meTxt:"#003f5c", other:"#cadced", btn:"#2a6f97", btnTxt:"#fff" },
-  mint: { bg:"#eaf7ea", panel:"#fff", text:"#2b4f36", primary:"#2f8f5b", me:"#c6ecc6", meTxt:"#134a2f", other:"#d0d0d0", btn:"#2f8f5b", btnTxt:"#fff" }
-};
-function applyTheme(id) {
-  const t = THEMES[id] || THEMES.default;
-  for (const k in t) {
-    document.documentElement.style.setProperty(`--${k}`, t[k]);
-  }
-  localStorage.setItem(K.THEME, id);
-}
-const themeSel = $("theme-select"), fontSel = $("font-select");
-applyTheme(localStorage.getItem(K.THEME) || "default");
-themeSel.value = localStorage.getItem(K.THEME) || "default";
-document.documentElement.style.setProperty("--font", localStorage.getItem(K.FONT) || "Segoe UI");
-fontSel.value = localStorage.getItem(K.FONT) || "Segoe UI";
-themeSel.onchange = () => applyTheme(themeSel.value);
-fontSel.onchange = () => {
-  document.documentElement.style.setProperty("--font", fontSel.value);
-  localStorage.setItem(K.FONT, fontSel.value);
-};
+/* 主題與字體切換 */
+const THEMES={default:{bg:"#f0f4f8",panel:"#fff",text:"#333",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#e2e2e2",btn:"#2a6f97",btnTxt:"#fff"},dark:{bg:"#1e1e1e",panel:"#2d2d2d",text:"#e0e0e0",primary:"#81c1ff",me:"#3b78ff",meTxt:"#fff",other:"#555",btn:"#3b78ff",btnTxt:"#fff"},daisy:{bg:"#fff9e6",panel:"#fff",text:"#333",primary:"#e2a000",me:"#ffe4a8",meTxt:"#924e00",other:"#e2e2e2",btn:"#e2a000",btnTxt:"#fff"},sky:{bg:"#e7f3ff",panel:"#fff",text:"#003f5c",primary:"#2a6f97",me:"#d0f0fd",meTxt:"#003f5c",other:"#cadced",btn:"#2a6f97",btnTxt:"#fff"},mint:{bg:"#eaf7ea",panel:"#fff",text:"#2b4f36",primary:"#2f8f5b",me:"#c6ecc6",meTxt:"#134a2f",other:"#d0d0d0",btn:"#2f8f5b",btnTxt:"#fff"}};
+function applyTheme(id){const t=THEMES[id]||THEMES.default;for(const k in t){document.documentElement.style.setProperty(`--${k}`,t[k]);}localStorage.setItem(K.THEME,id);}const themeSel=$("theme-select"),fontSel=$("font-select");applyTheme(localStorage.getItem(K.THEME)||"default");themeSel.value=localStorage.getItem(K.THEME)||"default";document.documentElement.style.setProperty("--font",localStorage.getItem(K.FONT)||"Segoe UI");fontSel.value=localStorage.getItem(K.FONT)||"Segoe UI";themeSel.onchange=()=>applyTheme(themeSel.value);fontSel.onchange=()=>{document.documentElement.style.setProperty("--font",fontSel.value);localStorage.setItem(K.FONT,fontSel.value);}
 
-/* ======= 安全檢查 ======= */
-function isLocalStorageAvailable() {
-  try {
-    const t = "__test__";
-    localStorage.setItem(t, t);
-    localStorage.removeItem(t);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-if (!isLocalStorageAvailable()) {
-  alert("⚠️ 此瀏覽器不支援 localStorage，請更換瀏覽器或調整設定。");
-}
+/* LocalStorage 安全檢查 */
+function isLocalStorageAvailable(){try{const t="__test__";localStorage.setItem(t,t);localStorage.removeItem(t);return true;}catch(e){return false;}}
+if(!isLocalStorageAvailable()){alert("⚠️ 此瀏覽器不支援 localStorage，請更換瀏覽器或調整設定。");}
 
-/* ======= 帳號登入系統 ======= */
-const authArea = $("auth-area"), mainUI = $("main-ui"), authMsg = $("auth-msg"), userInfo = $("user-info");
-const usernameEl = $("auth-username"), passwordEl = $("auth-password");
-const loginBtn = $("login-btn"), registerBtn = $("register-btn"), logoutBtn = $("logout-btn"), deleteBtn = $("delete-account-btn");
+/* Auth 登入系統 */
+const authArea=$("auth-area"),mainUI=$("main-ui"),authMsg=$("auth-msg"),userInfo=$("user-info");
+const usernameEl=$("auth-username"),passwordEl=$("auth-password"),loginBtn=$("login-btn"),registerBtn=$("register-btn"),logoutBtn=$("logout-btn"),deleteBtn=$("delete-account-btn");
+const loadAcc=()=>JSON.parse(localStorage.getItem(K.ACC)||"[]");const saveAcc=a=>localStorage.setItem(K.ACC,JSON.stringify(a));
+const setLogin=u=>u?localStorage.setItem(K.LOGIN,u):localStorage.removeItem(K.LOGIN);
+const getLogin=()=>localStorage.getItem(K.LOGIN);
+function showAuth(msg=""){authArea.style.display="flex";mainUI.style.display="none";authMsg.textContent=msg;}
+function showMain(u){authArea.style.display="none";mainUI.style.display="block";userInfo.textContent=`使用者：${u}`;loadHistory();loadInput();}
+function register(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const arr=loadAcc();if(arr.some(e=>e.u===u)){authMsg.textContent="帳號已存在";return;}arr.push({u,h:sha256(p)});saveAcc(arr);authMsg.textContent="✅ 註冊成功，請登入";usernameEl.value=passwordEl.value="";}
+function login(){const u=usernameEl.value.trim(),p=passwordEl.value;if(!u||!p){authMsg.textContent="請輸入帳號密碼";return;}const acc=loadAcc().find(e=>e.u===u);if(!acc||acc.h!==sha256(p)){authMsg.textContent="帳號或密碼錯誤";return;}setLogin(u);showMain(u);}
+function logout(){setLogin(null);showAuth();}
+function delAcc(){if(!confirm("確定刪除帳號？"))return;saveAcc(loadAcc().filter(e=>e.u!==getLogin()));logout();}
+loginBtn.onclick=login;registerBtn.onclick=register;logoutBtn.onclick=logout;deleteBtn.onclick=delAcc;
 
-const loadAcc = () => JSON.parse(localStorage.getItem(K.ACC) || "[]");
-const saveAcc = a => localStorage.setItem(K.ACC, JSON.stringify(a));
-const setLogin = u => u ? localStorage.setItem(K.LOGIN, u) : localStorage.removeItem(K.LOGIN);
-const getLogin = () => localStorage.getItem(K.LOGIN);
+/* 個別帳號儲存鍵值生成器 */
+function getHistoryKey(u){return `chat-history-${u}`;}
+function getInputKey(u){return `chat-input-${u}`;}
 
-function showAuth(msg="") {
-  authArea.style.display = "flex";
-  mainUI.style.display = "none";
-  authMsg.textContent = msg;
-}
-function showMain(u) {
-  authArea.style.display = "none";
-  mainUI.style.display = "block";
-  userInfo.textContent = `使用者：${u}`;
-  loadHistory(); loadInput();
-}
-function register() {
-  const u = usernameEl.value.trim(), p = passwordEl.value;
-  if (!u || !p) return authMsg.textContent = "請輸入帳號密碼";
-  const arr = loadAcc();
-  if (arr.some(e => e.u === u)) return authMsg.textContent = "帳號已存在";
-  arr.push({ u, h: sha256(p) });
-  saveAcc(arr);
-  authMsg.textContent = "✅ 註冊成功，請登入";
-  usernameEl.value = passwordEl.value = "";
-}
-function login() {
-  const u = usernameEl.value.trim(), p = passwordEl.value;
-  if (!u || !p) return authMsg.textContent = "請輸入帳號密碼";
-  const acc = loadAcc().find(e => e.u === u);
-  if (!acc || acc.h !== sha256(p)) return authMsg.textContent = "帳號或密碼錯誤";
-  setLogin(u); showMain(u);
-}
-function logout() { setLogin(null); showAuth(); }
-function delAcc() {
-  if (!confirm("確定刪除帳號？")) return;
-  saveAcc(loadAcc().filter(e => e.u !== getLogin()));
-  logout();
-}
-loginBtn.onclick = login;
-registerBtn.onclick = register;
-logoutBtn.onclick = logout;
-deleteBtn.onclick = delAcc;
+/* Chat UI 操作與資料保存 */
+const chatBox=$("chat-box"),msgInput=$("msg-input"),sendBtn=$("send-btn");
+function appendMsg(from,txt){const d=document.createElement("div");d.className="msg "+(from==="你"?"me":"other");d.textContent=txt;chatBox.appendChild(d);chatBox.scrollTop=chatBox.scrollHeight;const u=getLogin();if(u)localStorage.setItem(getHistoryKey(u),chatBox.innerHTML);}
+function loadHistory(){const u=getLogin();if(!u)return;const h=localStorage.getItem(getHistoryKey(u));if(h)chatBox.innerHTML=h;}
+function loadInput(){const u=getLogin();if(!u)return;const t=localStorage.getItem(getInputKey(u));if(t)msgInput.value=t;}
+msgInput.oninput=()=>{const u=getLogin();if(u)localStorage.setItem(getInputKey(u),msgInput.value);};
 
-/***************************************************************************************/
-
-
-
-
-/* ======= 每位使用者獨立資料儲存 ======= */
-function getHistoryKey(u) { return `chat-history-${u}`; }
-function getInputKey(u) { return `chat-input-${u}`; }
-
-/* ======= 聊天儲存與顯示 ======= */
-const chatBox = $("chat-box"), msgInput = $("msg-input"), sendBtn = $("send-btn");
-function appendMsg(from, txt) {
-  const d = document.createElement("div");
-  d.className = "msg " + (from === "你" ? "me" : "other");
-  d.textContent = txt;
-  chatBox.appendChild(d);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  const u = getLogin();
-  if (u) localStorage.setItem(getHistoryKey(u), chatBox.innerHTML);
-}
-function loadHistory() {
-  const u = getLogin();
-  if (!u) return;
-  const h = localStorage.getItem(getHistoryKey(u));
-  if (h) chatBox.innerHTML = h;
-}
-function loadInput() {
-  const u = getLogin();
-  if (!u) return;
-  const t = localStorage.getItem(getInputKey(u));
-  if (t) msgInput.value = t;
-}
-msgInput.oninput = () => {
-  const u = getLogin();
-  if (u) localStorage.setItem(getInputKey(u), msgInput.value);
-};
-
-/* ======= BLE 藍牙連線功能 ======= */
-let bleDevice, bleServer, bleService, bleTX, bleRX, discNotified = false;
-const statusText = $("status"), connectBtn = $("connect-btn");
-
-async function connectBLE() {
-  if (!navigator.bluetooth) {
-    alert("⚠️ 此瀏覽器不支援藍牙功能。");
-    return;
-  }
-  try {
-    bleDevice = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
-    });
-    bleDevice.addEventListener("gattserverdisconnected", () => {
-      statusText.textContent = "❌ 藍牙已中斷";
-      if (!discNotified) {
-        appendMsg("系統", "⚠️ 藍牙已中斷連線");
-        discNotified = true;
-      }
-    });
-    bleServer = await bleDevice.gatt.connect();
-    bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
-    bleTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
-    bleRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
-
+/* BLE 藍牙通訊 */
+let bleDevice,bleServer,bleService,bleTX,bleRX,discNotified=false;
+const statusText=$("status"),connectBtn=$("connect-btn");
+async function connectBLE(){
+  if (!navigator.bluetooth){alert("⚠️ 此瀏覽器不支援藍牙功能。");return;}
+  try{
+    bleDevice=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]});
+    bleDevice.addEventListener("gattserverdisconnected",()=>{statusText.textContent="❌ 藍牙已中斷";if(!discNotified){appendMsg("系統","⚠️ 藍牙已中斷連線");discNotified=true;}});
+    bleServer=await bleDevice.gatt.connect();bleService=await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    bleTX=await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    bleRX=await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
     await bleRX.startNotifications();
-    bleRX.addEventListener("characteristicvaluechanged", e => {
-      appendMsg("ESP32", new TextDecoder().decode(e.target.value));
-    });
-
-    statusText.textContent = "✅ 已連接 ESP32 BLE";
-    discNotified = false;
-    appendMsg("系統", "✅ 已連接 ESP32 BLE");
-  } catch (err) {
-    console.error(err);
-    statusText.textContent = "❌ 藍牙連線失敗";
-    appendMsg("系統", "❌ BLE 連線失敗");
-  }
+    bleRX.addEventListener("characteristicvaluechanged",e=>appendMsg("ESP32",new TextDecoder().decode(e.target.value)));
+    statusText.textContent="✅ 已連接 ESP32 BLE";
+    discNotified=false;
+    appendMsg("系統","✅ 已連接 ESP32 BLE");
+  }catch(err){console.error(err);statusText.textContent="❌ 藍牙連線失敗";appendMsg("系統","❌ BLE 連線失敗");}
 }
-connectBtn.onclick = connectBLE;
+connectBtn.onclick=connectBLE;
 
-/* ======= 訊息傳送與模擬回覆 ======= */
-function mockReply(m) {
-  setTimeout(() => appendMsg("ESP32 (模擬)", `收到「${m}」`), 1000);
-}
-async function send() {
-  const m = msgInput.value;
-  if (!m.trim()) return;
-  appendMsg("你", m);
-  msgInput.value = "";
-  const u = getLogin();
-  if (u) localStorage.setItem(getInputKey(u), "");
-  if (bleTX) {
-    await bleTX.writeValue(new TextEncoder().encode(m));
-  } else {
-    mockReply(m);
-  }
-}
-sendBtn.onclick = send;
-msgInput.addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey && !/Mobi|Android/i.test(navigator.userAgent)) {
-    e.preventDefault(); send();
-  }
-});
+/* 傳送訊息與模擬回覆 */
+function mockReply(m){setTimeout(()=>appendMsg("ESP32 (模擬)",`收到「${m}」`),1000);}
+async function send(){const m=msgInput.value;if(!m.trim())return;appendMsg("你",m);msgInput.value="";const u=getLogin();if(u)localStorage.setItem(getInputKey(u),"");if(bleTX){await bleTX.writeValue(new TextEncoder().encode(m));}else mockReply(m);}
+sendBtn.onclick=send;
+msgInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!/Mobi|Android/i.test(navigator.userAgent)){e.preventDefault();send();}});
 
-/* ======= 畫面初始化 ======= */
-(function () {
-  const u = getLogin();
-  u ? showMain(u) : showAuth();
-})();
-
-/* ======= 輸入欄 focus 時自動滾動 ======= */
-msgInput.addEventListener("focus", () => {
-  setTimeout(() => {
-    msgInput.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 300);
-});
+/* 初始化畫面 */
+(function(){const u=getLogin();u?showMain(u):showAuth();})();
 </script>
 </body>
 </html>
