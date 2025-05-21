@@ -13,6 +13,78 @@
     body,button,input,select,textarea,label,div,span,h1,h2,h3,h4,h5,h6{font-family:var(--font),sans-serif;color:var(--text);transition:color .3s,background .3s,border-color .3s;}
     body{margin:0;padding:10px;background:var(--bg);}input,textarea,select{background:var(--panel);border:1px solid #ccc;border-radius:6px;}select,option{background:var(--panel);color:var(--text);}textarea::placeholder,input::placeholder{color:var(--text);opacity:.6;}
     h2{text-align:center;margin:.3em 0 .6em;color:var(--primary);}button{background:var(--btn-bg);color:var(--btn-txt);border:none;border-radius:6px;padding:8px 12px;cursor:pointer;}button:hover{filter:brightness(1.05);}button:active{filter:brightness(.9);}#auth-area{max-width:420px;margin:0 auto 20px;background:var(--panel);padding:20px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:10px;}#auth-msg{text-align:center;font-size:.9em;color:#c00;min-height:1.2em;}#main-ui{display:none;}#status{text-align:center;margin-bottom:5px;font-size:.9em;font-weight:600;}#top-bar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:10px;}#settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}label{font-size:.9em;font-weight:600;}#chat-box{border:1px solid #ccc;padding:10px;height:50vh;overflow-y:scroll;background:var(--panel);display:flex;flex-direction:column;gap:5px;margin-bottom:10px;} .msg{max-width:70%;padding:8px 12px;border-radius:10px;font-size:1em;white-space:pre-wrap;word-wrap:break-word;} .me{align-self:flex-end;background:var(--me);color:var(--me-txt);} .other{align-self:flex-start;background:var(--other);color:var(--text);}#input-area{display:flex;gap:5px;}#msg-input{flex:1;padding:8px;font-size:1em;resize:vertical;min-height:4em;max-height:12em;overflow-y:auto;}#danger-zone{margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}#danger-zone button{background:#d9534f;color:#fff;}#user-info{font-size:.9em;text-align:center;margin-top:2px;font-weight:600;}
+    @media screen and (max-width: 768px) {
+  #input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    padding: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+  }
+  #main-ui {
+    padding-bottom: 160px;
+  }
+}
+/* 手機裝置輸入欄固定與滑動設定 */
+@media screen and (max-width: 768px) {
+  #input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--panel);
+    padding: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+  }
+
+  #main-ui {
+    padding-bottom: 160px;
+  }
+}
+
+#msg-input {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 40vh; /* 可依需要調整 */
+}
+#input-area {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 8px;
+  background: var(--panel);
+}
+
+#msg-input {
+  flex: 1;
+  resize: none;
+  padding: 8px;
+  font-size: 1em;
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 手機上固定底部 */
+@media screen and (max-width: 768px) {
+  #input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  #main-ui {
+    padding-bottom: 140px; /* 預留空間 */
+  }
+}
+
   </style>
 </head>
 <body>
@@ -29,20 +101,45 @@
 
   <div id="main-ui">
     <div id="top-bar">
-      <div id="status">尚未連接藍牙</div>
-      <button id="connect-btn">連接 BLE</button>
-      <div id="settings">
-        <label>主題：
-          <select id="theme-select"><option value="default">經典淺色</option><option value="dark">深色</option><option value="daisy">雛菊淡黃</option><option value="sky">天空藍</option><option value="mint">薄荷綠</option></select>
-        </label>
-        <label>字體：
-          <select id="font-select"><option value="Segoe UI">Segoe UI</option><option value="Arial">Arial</option><option value="Courier New">Courier New</option><option value="Noto Sans TC">Noto Sans TC</option><option value="serif">Serif</option></select>
-        </label>
-      </div>
+  <!-- 藍牙狀態 + 按鈕同列 -->
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+    <div id="status">尚未連接藍牙</div>
+    <button id="connect-btn">連接 BLE</button>
+  </div>
+
+  <!-- 使用者 + 登出 + 刪除帳號 下一列 -->
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
+    <div id="user-info">使用者：</div>
+    <button id="logout-btn">登出</button>
+    <button id="delete-account-btn">🗑️ 刪除帳號</button>
+  </div>
+
+  <!-- 主題與字體設定維持原樣 -->
+  <div id="settings">
+    <label>主題：
+      <select id="theme-select">
+        <option value="default">經典淺色</option>
+        <option value="dark">深色</option>
+        <option value="daisy">雛菊淡黃</option>
+        <option value="sky">天空藍</option>
+        <option value="mint">薄荷綠</option>
+      </select>
+    </label>
+    <label>字體：
+      <select id="font-select">
+        <option value="Segoe UI">Segoe UI</option>
+        <option value="Arial">Arial</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Noto Sans TC">Noto Sans TC</option>
+        <option value="serif">Serif</option>
+      </select>
+    </label>
+  </div>
+</div>
     </div>
 
     <div id="chat-box"></div>
-    <div id="input-area"><textarea id="msg-input" placeholder="輸入訊息..." rows="4"></textarea><button id="send-btn">傳送</button></div>
+    <div id="input-area"><textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea><button id="send-btn">傳送</button></div>
     <div id="user-info"></div>
     <div id="danger-zone"><button id="delete-account-btn">🗑️ 刪除帳號</button><button id="logout-btn">登出</button></div>
   </div>
@@ -112,6 +209,11 @@ msgInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!/Mobi|
 
 /* 初始化畫面 */
 (function(){const u=getLogin();u?showMain(u):showAuth();})();
+msgInput.addEventListener("focus", () => {
+  setTimeout(() => {
+    msgInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 300);
+});  
 </script>
 </body>
 </html>
