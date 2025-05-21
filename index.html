@@ -228,6 +228,7 @@
   <script>
     const $ = id => document.getElementById(id);
     const K = { ACC: "accounts", LOGIN: "loggedInUser", THEME: "lora-theme", FONT: "lora-font" };
+    
 
     const THEMES = {
       default: { bg: "#f0f4f8", panel: "#fff", text: "#333", primary: "#2a6f97", me: "#d0f0fd", meTxt: "#003f5c", other: "#e2e2e2", btn: "#2a6f97", btnTxt: "#fff" },
@@ -303,6 +304,48 @@
       saveAcc(loadAcc().filter(e => e.u !== getLogin()));
       logout();
     }
+    let bleDevice, bleServer, bleService, bleTX, bleRX;
+const statusText = $("status"), connectBtn = $("connect-btn");
+
+async function connectBLE() {
+  if (!navigator.bluetooth) {
+    alert("⚠️ 此瀏覽器不支援藍牙功能。");
+    return;
+  }
+
+  try {
+    bleDevice = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ["6e400001-b5a3-f393-e0a9-e50e24dcca9e"]
+    });
+
+    bleDevice.addEventListener("gattserverdisconnected", () => {
+      statusText.textContent = "❌ 藍牙已中斷";
+      appendMsg("系統", "⚠️ 藍牙已中斷連線");
+    });
+
+    bleServer = await bleDevice.gatt.connect();
+    bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+    bleTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    bleRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
+
+    await bleRX.startNotifications();
+    bleRX.addEventListener("characteristicvaluechanged", e => {
+      const msg = new TextDecoder().decode(e.target.value);
+      appendMsg("ESP32", msg);
+    });
+
+    statusText.textContent = "✅ 已連接 ESP32 BLE";
+    appendMsg("系統", "✅ 已連接 ESP32 BLE");
+  } catch (err) {
+    console.error(err);
+    statusText.textContent = "❌ 藍牙連線失敗";
+    appendMsg("系統", "❌ BLE 連線失敗");
+  }
+}
+
+connectBtn.onclick = connectBLE;
+
 
     $("login-btn").onclick = login;
     $("register-btn").onclick = register;
@@ -327,13 +370,24 @@
       chatBox.innerHTML = localStorage.getItem("chat-history-" + u) || "";
     }
 
-    function send() {
+    async function send() {
       const msg = msgInput.value.trim();
       if (!msg) return;
       appendMsg("你", msg);
       msgInput.value = "";
-      mockReply(msg);
+
+      if (bleTX) {
+        try {
+          await bleTX.writeValue(new TextEncoder().encode(msg));
+        } catch (e) {
+          alert("❌ 傳送失敗！");
+          console.error(e);
+        }
+      } else {
+        appendMsg("系統", "⚠️ 尚未連接藍牙，無法傳送！");
+      }
     }
+
 
     sendBtn.onclick = send;
     msgInput.addEventListener("keydown", e => {
