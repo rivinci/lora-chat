@@ -355,27 +355,36 @@ connectBtn.onclick = connectBLE;
     const chatBox = $("chat-box"), msgInput = $("msg-input"), sendBtn = $("send-btn");
 
     function appendMsg(from, txt) {
-	const container = document.createElement("div");
-	container.className = "msg " + (from === "你" ? "me" : "other");
+  const container = document.createElement("div");
+  container.className = "msg " + (from === "你" ? "me" : "other");
 
-	const msgText = document.createElement("div");
-	msgText.textContent = txt;
+  const msgText = document.createElement("div");
+  msgText.textContent = txt;
 
-	const time = document.createElement("div");
-	const now = new Date();
-	time.textContent = now.toLocaleString(); // 顯示當前時間
-	time.style.fontSize = "0.75em";
-	time.style.opacity = "0.6";
-	time.style.marginTop = "4px";
+  const time = document.createElement("div");
+  const now = new Date();
+  const formatted = now.getFullYear() + "/" +
+    String(now.getMonth() + 1).padStart(2, '0') + "/" +
+    String(now.getDate()).padStart(2, '0') + " " +
+    String(now.getHours()).padStart(2, '0') + ":" +
+    String(now.getMinutes()).padStart(2, '0') + ":" +
+    String(now.getSeconds()).padStart(2, '0') + "." +
+    String(now.getMilliseconds()).padStart(3, '0');
 
-	container.appendChild(msgText);
-	container.appendChild(time);
-	chatBox.appendChild(container);
-	chatBox.scrollTop = chatBox.scrollHeight;
+  time.textContent = formatted;
+  time.style.fontSize = "0.75em";
+  time.style.opacity = "0.6";
+  time.style.marginTop = "4px";
 
-	const u = getLogin();
-	if (u) localStorage.setItem("chat-history-" + u, chatBox.innerHTML);
-	}
+  container.appendChild(msgText);
+  container.appendChild(time);
+  chatBox.appendChild(container);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  const u = getLogin();
+  if (u) localStorage.setItem("chat-history-" + u, chatBox.innerHTML);
+}
+
 
     function loadHistory() {
       const u = getLogin();
