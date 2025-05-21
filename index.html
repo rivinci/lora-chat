@@ -176,7 +176,13 @@
       <button id="login-btn">登入</button>
       <button id="register-btn">註冊</button>
     </div>
-    <div id="auth-msg"></div>
+    <div id="auth-msg"></div
+    <div class="button-row">
+  <label style="cursor:pointer;">
+    📥 匯入帳號
+    <input type="file" id="import-acc-login" accept=".json" style="display:none;">
+  </label>
+</div>
   </div>
 
   <!-- 主介面區塊 -->
@@ -341,6 +347,38 @@
       const u = getLogin();
       u ? showMain(u) : showAuth();
     })();
+    function handleAccountImport(file) {
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const imported = JSON.parse(evt.target.result);
+      if (!Array.isArray(imported)) throw "格式錯誤";
+      const current = loadAcc();
+      const merged = [...current];
+      imported.forEach(newAcc => {
+        const i = current.findIndex(e => e.u === newAcc.u);
+        if (i >= 0) {
+          if (confirm(`帳號 ${newAcc.u} 已存在，是否覆蓋？`)) {
+            merged[i] = newAcc;
+          }
+        } else {
+          merged.push(newAcc);
+        }
+      });
+      saveAcc(merged);
+      alert("✅ 匯入完成！");
+    } catch (err) {
+      alert("❌ 匯入失敗，請確認格式正確！");
+    }
+  };
+  reader.readAsText(file);
+}
+
+$("import-acc-login").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) handleAccountImport(file);
+});
+
   </script>
 </body>
 </html>
