@@ -355,14 +355,27 @@ connectBtn.onclick = connectBLE;
     const chatBox = $("chat-box"), msgInput = $("msg-input"), sendBtn = $("send-btn");
 
     function appendMsg(from, txt) {
-      const d = document.createElement("div");
-      d.className = "msg " + (from === "你" ? "me" : "other");
-      d.textContent = txt;
-      chatBox.appendChild(d);
-      chatBox.scrollTop = chatBox.scrollHeight;
-      const u = getLogin();
-      if (u) localStorage.setItem("chat-history-" + u, chatBox.innerHTML);
-    }
+	const container = document.createElement("div");
+	container.className = "msg " + (from === "你" ? "me" : "other");
+
+	const msgText = document.createElement("div");
+	msgText.textContent = txt;
+
+	const time = document.createElement("div");
+	const now = new Date();
+	time.textContent = now.toLocaleString(); // 顯示當前時間
+	time.style.fontSize = "0.75em";
+	time.style.opacity = "0.6";
+	time.style.marginTop = "4px";
+
+	container.appendChild(msgText);
+	container.appendChild(time);
+	chatBox.appendChild(container);
+	chatBox.scrollTop = chatBox.scrollHeight;
+
+	const u = getLogin();
+	if (u) localStorage.setItem("chat-history-" + u, chatBox.innerHTML);
+	}
 
     function loadHistory() {
       const u = getLogin();
