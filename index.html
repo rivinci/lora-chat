@@ -391,11 +391,13 @@ connectBtn.onclick = connectBLE;
 
     sendBtn.onclick = send;
     msgInput.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        send();
-      }
-    });
+		  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+		  if (!isMobile && e.key === "Enter" && !e.shiftKey) {
+  		    e.preventDefault();
+		      send();
+		      }
+	 });
+
 
     function mockReply(m) {
       setTimeout(() => appendMsg("ESP32", `收到「${m}」`), 1000);
