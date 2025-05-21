@@ -179,6 +179,7 @@
     <div id="auth-msg"></div
     <div class="button-row">
   <label style="cursor:pointer;">
+    
     📥 匯入帳號
     <input type="file" id="import-acc-login" accept=".json" style="display:none;">
   </label>
@@ -192,6 +193,9 @@
       <div id="user-info">使用者：</div>
       <button id="connect-btn">連接 BLE</button>
     </div>
+    <div class="button-row" style="margin-top:15px;">
+  <button id="export-acc-btn">📤 匯出目前帳號</button>
+</div>
 
     <div id="settings">
       <label>主題：
@@ -378,6 +382,26 @@ $("import-acc-login").addEventListener("change", e => {
   const file = e.target.files[0];
   if (file) handleAccountImport(file);
 });
+$("export-acc-btn").addEventListener("click", () => {
+  const currentUser = getLogin();
+  if (!currentUser) return alert("⚠️ 未登入，無法匯出帳號。");
+
+  const accList = loadAcc();
+  const account = accList.find(acc => acc.u === currentUser);
+  if (!account) return alert("❌ 找不到登入帳號");
+
+  const pw = prompt("請再次輸入密碼以匯出帳號：");
+  if (!pw || sha256(pw) !== account.h) return alert("❌ 密碼錯誤，無法匯出");
+
+  const blob = new Blob([JSON.stringify([account], null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${account.u}-account.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+    
 
   </script>
 </body>
