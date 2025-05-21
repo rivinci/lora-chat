@@ -9,197 +9,78 @@
   <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js").catch(console.error);}</script>
   <style>
     :root {
-  --bg: #f0f4f8;
-  --panel: #ffffff;
-  --text: #333;
-  --primary: #2a6f97;
-  --me: #d0f0fd;
-  --me-txt: #003f5c;
-  --other: #e2e2e2;
-  --btn-bg: #2a6f97;
-  --btn-txt: #fff;
-  --font: "Segoe UI";
-}
+      --bg:#f0f4f8; --panel:#ffffff; --text:#333; --primary:#2a6f97;
+      --me:#d0f0fd; --me-txt:#003f5c; --other:#e2e2e2;
+      --btn-bg:#2a6f97; --btn-txt:#fff; --font:"Segoe UI";
+    }
+    * { box-sizing: border-box; }
+    body, button, input, select, textarea, label, div, span, h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font), sans-serif;
+      color: var(--text);
+      transition: color .3s, background .3s, border-color .3s;
+    }
+    body { margin: 0; padding: 10px; background: var(--bg); }
 
-* {
-  box-sizing: border-box;
-}
+    input, textarea, select {
+      background: var(--panel); border: 1px solid #ccc; border-radius: 6px;
+    }
+    textarea::placeholder, input::placeholder {
+      color: var(--text); opacity: .6;
+    }
+    h2 {
+      text-align: center; margin: .3em 0 .6em; color: var(--primary);
+    }
+    button {
+      background: var(--btn-bg); color: var(--btn-txt); border: none;
+      border-radius: 6px; padding: 8px 12px; cursor: pointer;
+    }
+    button:hover { filter: brightness(1.05); }
+    button:active { filter: brightness(.9); }
 
-body, button, input, select, textarea, label, div, span, h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font), sans-serif;
-  color: var(--text);
-  transition: color .3s, background .3s, border-color .3s;
-}
+    #auth-area {
+      max-width: 420px; margin: 0 auto 20px; background: var(--panel);
+      padding: 20px; border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    #auth-msg {
+      text-align: center; font-size: .9em; color: #c00; min-height: 1.2em;
+    }
+    #main-ui { display: none; }
 
-body {
-  margin: 0;
-  padding: 10px;
-  background: var(--bg);
-}
+    #chat-box {
+      border: 1px solid #ccc; padding: 10px; height: 50vh;
+      overflow-y: scroll; background: var(--panel);
+      display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;
+    }
+    .msg {
+      max-width: 70%; padding: 8px 12px; border-radius: 10px; font-size: 1em;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    .me { align-self: flex-end; background: var(--me); color: var(--me-txt); }
+    .other { align-self: flex-start; background: var(--other); color: var(--text); }
 
-h2 {
-  text-align: center;
-  margin: .3em 0 .6em;
-  color: var(--primary);
-}
+    #input-area {
+      display: flex; gap: 5px; align-items: center; padding: 8px;
+      background: var(--panel);
+    }
+    #msg-input {
+      flex: 1; resize: none; padding: 8px; font-size: 1em;
+      max-height: 40vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
 
-input, textarea, select {
-  background: var(--panel);
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 8px;
-  width: 100%;
-}
-
-textarea::placeholder, input::placeholder {
-  color: var(--text);
-  opacity: .6;
-}
-
-/* === 按鈕樣式（小型化） === */
-.btn {
-  background-color: var(--btn-bg);
-  color: var(--btn-txt);
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.9em;
-  cursor: pointer;
-  transition: background 0.3s, color 0.3s;
-}
-.btn:hover { filter: brightness(1.05); }
-.btn:active { filter: brightness(0.9); }
-
-.button-group {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-
-.centered {
-  text-align: center;
-  margin-top: 10px;
-}
-
-#auth-area {
-  max-width: 420px;
-  margin: 0 auto 20px;
-  background: var(--panel);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.08);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#auth-msg {
-  text-align: center;
-  font-size: .9em;
-  color: #c00;
-  min-height: 1.2em;
-}
-
-#main-ui {
-  display: none;
-  padding-bottom: 140px;
-}
-
-#chat-box {
-  border: 1px solid #ccc;
-  padding: 10px;
-  height: 50vh;
-  overflow-y: scroll;
-  background: var(--panel);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-.msg {
-  max-width: 70%;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 1em;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-.me {
-  align-self: flex-end;
-  background: var(--me);
-  color: var(--me-txt);
-}
-.other {
-  align-self: flex-start;
-  background: var(--other);
-  color: var(--text);
-}
-
-/* === 輸入欄 + 貼齊底部 === */
-#input-area {
-  display: flex;
-  gap: 6px;
-  align-items: flex-end;
-  padding: 6px 10px;
-  background: var(--panel);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
-}
-
-/* === 輸入欄預設 5 行，可捲動 === */
-#msg-input {
-  flex: 1;
-  resize: none;
-  padding: 8px;
-  font-size: 1em;
-  height: auto;
-  min-height: calc(1.4em * 5 + 16px); /* 約 5 行 + padding */
-  max-height: 35vh;
-  overflow-y: auto;
-  border-radius: 6px;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-}
-
-#settings {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.status-group {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-@media screen and (max-width: 768px) {
-  .btn {
-    flex: 1 1 auto;
-    min-width: 100px;
-    font-size: 0.85em;
-    padding: 5px 10px;
-  }
-}
-
-
-
+    @media screen and (max-width: 768px) {
+      #input-area {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      }
+      #main-ui { padding-bottom: 140px; }
+    }
   </style>
 </head>
 
  
-
 
 
 <body>
@@ -209,15 +90,9 @@ textarea::placeholder, input::placeholder {
   <div id="auth-area">
     <input id="auth-username" placeholder="使用者名稱" />
     <input id="auth-password" type="password" placeholder="密碼" />
-    <div class="button-group">
-      <button class="btn" id="login-btn">登入</button>
-      <button class="btn" id="register-btn">註冊</button>
-    </div>
-    <div class="centered">
-      <label class="btn">
-        📥 匯入帳號
-        <input type="file" id="import-acc-input-login" accept=".json" style="display:none;" />
-      </label>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button id="login-btn">登入</button>
+      <button id="register-btn">註冊</button>
     </div>
     <div id="auth-msg"></div>
   </div>
@@ -225,22 +100,20 @@ textarea::placeholder, input::placeholder {
   <!-- 主介面區塊 -->
   <div id="main-ui">
     <div id="top-bar">
-      <div class="status-group">
-        <button class="btn" id="connect-btn">連接 BLE</button>
+      <!-- 藍牙狀態 + 按鈕同列 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
         <div id="status">尚未連接藍牙</div>
+        <button id="connect-btn">連接 BLE</button>
       </div>
-      <div class="button-group">
-        <button class="btn" id="logout-btn">登出</button>
-        <button class="btn" id="delete-account-btn">🗑️ 刪除帳號</button>
+
+      <!-- 使用者 + 登出 + 刪除帳號 下一列 -->
+      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
         <div id="user-info">使用者：</div>
+        <button id="logout-btn">登出</button>
+        <button id="delete-account-btn">🗑️ 刪除帳號</button>
       </div>
-      <div class="centered">
-        <button class="btn" id="export-acc-btn">📤 匯出目前帳號</button>
-        <label class="btn">
-          📥 匯入帳號
-          <input type="file" id="import-acc-input-main" accept=".json" style="display:none;" />
-        </label>
-      </div>
+
+      <!-- 主題與字體設定 -->
       <div id="settings">
         <label>主題：
           <select id="theme-select">
@@ -268,20 +141,22 @@ textarea::placeholder, input::placeholder {
 
     <!-- 輸入與傳送 -->
     <div id="input-area">
-      <textarea id="msg-input" placeholder="輸入訊息..." rows="5"></textarea>
-      <button class="btn" id="send-btn">傳送</button>
+      <textarea id="msg-input" placeholder="輸入訊息..." rows="1"></textarea>
+      <button id="send-btn">傳送</button>
     </div>
   </div>
 
-  <script src="script.js"></script>
+
+
+
+
+
+
+
+
+
+
  
-  
-
-
-
-
-
-
 
 
 <script>
@@ -293,7 +168,7 @@ const K = {
 };
 const $ = id => document.getElementById(id);
 
-// ========== 主題與字體切換 ==========
+/* ======= 主題與字體切換 ======= */
 const THEMES = {
   default: { bg:"#f0f4f8", panel:"#fff", text:"#333", primary:"#2a6f97", me:"#d0f0fd", meTxt:"#003f5c", other:"#e2e2e2", btn:"#2a6f97", btnTxt:"#fff" },
   dark: { bg:"#1e1e1e", panel:"#2d2d2d", text:"#e0e0e0", primary:"#81c1ff", me:"#3b78ff", meTxt:"#fff", other:"#555", btn:"#3b78ff", btnTxt:"#fff" },
@@ -319,28 +194,22 @@ fontSel.onchange = () => {
   localStorage.setItem(K.FONT, fontSel.value);
 };
 
-
-const inputArea = document.getElementById("input-area");
-  const msgInput = document.getElementById("msg-input");
-
-  msgInput.addEventListener("focus", () => {
-    setTimeout(() => {
-      inputArea.scrollIntoView({ behavior: "smooth", block: "end" });
-    }, 200); // 略延遲等鍵盤彈出
-  });
-  
-  
-  
-// ========== localStorage 檢查 ==========
-try {
-  const testKey = "__test__";
-  localStorage.setItem(testKey, testKey);
-  localStorage.removeItem(testKey);
-} catch (e) {
+/* ======= 安全檢查 ======= */
+function isLocalStorageAvailable() {
+  try {
+    const t = "__test__";
+    localStorage.setItem(t, t);
+    localStorage.removeItem(t);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+if (!isLocalStorageAvailable()) {
   alert("⚠️ 此瀏覽器不支援 localStorage，請更換瀏覽器或調整設定。");
 }
 
-// ========== 登入系統 ==========
+/* ======= 帳號登入系統 ======= */
 const authArea = $("auth-area"), mainUI = $("main-ui"), authMsg = $("auth-msg"), userInfo = $("user-info");
 const usernameEl = $("auth-username"), passwordEl = $("auth-password");
 const loginBtn = $("login-btn"), registerBtn = $("register-btn"), logoutBtn = $("logout-btn"), deleteBtn = $("delete-account-btn");
@@ -389,61 +258,16 @@ registerBtn.onclick = register;
 logoutBtn.onclick = logout;
 deleteBtn.onclick = delAcc;
 
-// ========== 匯出帳號 ==========
-function exportAccount() {
-  const currentUser = getLogin();
-  if (!currentUser) return alert("⚠️ 未登入，無法匯出帳號。");
+/***************************************************************************************/
 
-  const accList = loadAcc();
-  const account = accList.find(acc => acc.u === currentUser);
-  if (!account) return alert("❌ 找不到登入帳號");
 
-  const pw = prompt("請再次輸入密碼以匯出帳號：");
-  if (!pw || sha256(pw) !== account.h) return alert("❌ 密碼錯誤，無法匯出");
 
-  const blob = new Blob([JSON.stringify([account], null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${account.u}-account.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-$("export-acc-btn").onclick = exportAccount;
 
-// ========== 匯入帳號 ==========
-function handleAccountImport(file) {
-  const reader = new FileReader();
-  reader.onload = evt => {
-    try {
-      const imported = JSON.parse(evt.target.result);
-      if (!Array.isArray(imported)) throw "格式錯誤";
-      const current = loadAcc();
-      const merged = [...current];
-      imported.forEach(newAcc => {
-        const i = current.findIndex(e => e.u === newAcc.u);
-        if (i >= 0) {
-          if (confirm(`帳號 ${newAcc.u} 已存在，是否覆蓋？`)) {
-            merged[i] = newAcc;
-          }
-        } else {
-          merged.push(newAcc);
-        }
-      });
-      saveAcc(merged);
-      alert("✅ 匯入完成！");
-    } catch (err) {
-      alert("❌ 匯入失敗，請確認格式正確！");
-    }
-  };
-  reader.readAsText(file);
-}
-["import-acc-input-login", "import-acc-input-main"].forEach(id => {
-  const el = $(id);
-  if (el) el.addEventListener("change", e => e.target.files[0] && handleAccountImport(e.target.files[0]));
-});
+/* ======= 每位使用者獨立資料儲存 ======= */
+function getHistoryKey(u) { return `chat-history-${u}`; }
+function getInputKey(u) { return `chat-input-${u}`; }
 
-// ========== 聊天功能 ==========
+/* ======= 聊天儲存與顯示 ======= */
 const chatBox = $("chat-box"), msgInput = $("msg-input"), sendBtn = $("send-btn");
 function appendMsg(from, txt) {
   const d = document.createElement("div");
@@ -452,51 +276,34 @@ function appendMsg(from, txt) {
   chatBox.appendChild(d);
   chatBox.scrollTop = chatBox.scrollHeight;
   const u = getLogin();
-  if (u) localStorage.setItem(`chat-history-${u}`, chatBox.innerHTML);
+  if (u) localStorage.setItem(getHistoryKey(u), chatBox.innerHTML);
 }
 function loadHistory() {
   const u = getLogin();
   if (!u) return;
-  chatBox.innerHTML = localStorage.getItem(`chat-history-${u}`) || "";
+  const h = localStorage.getItem(getHistoryKey(u));
+  if (h) chatBox.innerHTML = h;
 }
 function loadInput() {
   const u = getLogin();
   if (!u) return;
-  msgInput.value = localStorage.getItem(`chat-input-${u}`) || "";
+  const t = localStorage.getItem(getInputKey(u));
+  if (t) msgInput.value = t;
 }
 msgInput.oninput = () => {
   const u = getLogin();
-  if (u) localStorage.setItem(`chat-input-${u}`, msgInput.value);
+  if (u) localStorage.setItem(getInputKey(u), msgInput.value);
 };
-sendBtn.onclick = send;
-msgInput.addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey && !/Mobi|Android/i.test(navigator.userAgent)) {
-    e.preventDefault(); send();
-  }
-});
-function mockReply(m) {
-  setTimeout(() => appendMsg("ESP32 (模擬)", `收到「${m}」`), 1000);
-}
-async function send() {
-  const m = msgInput.value;
-  if (!m.trim()) return;
-  appendMsg("你", m);
-  msgInput.value = "";
-  const u = getLogin();
-  if (u) localStorage.setItem(`chat-input-${u}`, "");
-  if (bleTX) {
-    await bleTX.writeValue(new TextEncoder().encode(m));
-  } else {
-    mockReply(m);
-  }
-}
 
-// ========== BLE ==========
+/* ======= BLE 藍牙連線功能 ======= */
 let bleDevice, bleServer, bleService, bleTX, bleRX, discNotified = false;
 const statusText = $("status"), connectBtn = $("connect-btn");
 
 async function connectBLE() {
-  if (!navigator.bluetooth) return alert("⚠️ 此瀏覽器不支援藍牙功能。");
+  if (!navigator.bluetooth) {
+    alert("⚠️ 此瀏覽器不支援藍牙功能。");
+    return;
+  }
   try {
     bleDevice = await navigator.bluetooth.requestDevice({
       acceptAllDevices: true,
@@ -530,17 +337,42 @@ async function connectBLE() {
 }
 connectBtn.onclick = connectBLE;
 
-// ========== 初始化畫面 ==========
-(() => {
+/* ======= 訊息傳送與模擬回覆 ======= */
+function mockReply(m) {
+  setTimeout(() => appendMsg("ESP32 (模擬)", `收到「${m}」`), 1000);
+}
+async function send() {
+  const m = msgInput.value;
+  if (!m.trim()) return;
+  appendMsg("你", m);
+  msgInput.value = "";
+  const u = getLogin();
+  if (u) localStorage.setItem(getInputKey(u), "");
+  if (bleTX) {
+    await bleTX.writeValue(new TextEncoder().encode(m));
+  } else {
+    mockReply(m);
+  }
+}
+sendBtn.onclick = send;
+msgInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey && !/Mobi|Android/i.test(navigator.userAgent)) {
+    e.preventDefault(); send();
+  }
+});
+
+/* ======= 畫面初始化 ======= */
+(function () {
   const u = getLogin();
   u ? showMain(u) : showAuth();
 })();
+
+/* ======= 輸入欄 focus 時自動滾動 ======= */
 msgInput.addEventListener("focus", () => {
   setTimeout(() => {
     msgInput.scrollIntoView({ behavior: "smooth", block: "center" });
   }, 300);
 });
 </script>
-
 </body>
 </html>
