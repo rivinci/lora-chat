@@ -176,7 +176,7 @@
       <button id="login-btn">登入</button>
       <button id="register-btn">註冊</button>
     </div>
-    <div id="auth-msg"></div
+    <div id="auth-msg"></div>
     <div class="button-row">
   <label style="cursor:pointer;">
     
@@ -238,10 +238,6 @@
 	let rssiValues = [];
 	let totalPackets = 0;
 	let receivedPackets = 0;
-
-    const $ = id => document.getElementById(id);
-    const K = { ACC: "accounts", LOGIN: "loggedInUser", THEME: "lora-theme", FONT: "lora-font" };
-    
 
     const THEMES = {
       default: { bg: "#f0f4f8", panel: "#fff", text: "#333", primary: "#2a6f97", me: "#d0f0fd", meTxt: "#003f5c", other: "#e2e2e2", btn: "#2a6f97", btnTxt: "#fff" },
@@ -520,18 +516,18 @@ $("export-acc-btn").addEventListener("click", () => {
   };
   fixInputForMobile();
 }
-function updateStats() {
-  const avgRSSI = rssiValues.length
-    ? Math.round(rssiValues.reduce((a, b) => a + b, 0) / rssiValues.length)
-    : "N/A";
-  const successRate = totalPackets > 0
-    ? ((receivedPackets / totalPackets) * 100).toFixed(1)
-    : "N/A";
+	function updateStats() {
+	const avgRSSI = rssiValues.length
+		? Math.round(rssiValues.reduce((a, b) => a + b, 0) / rssiValues.length)
+		: "N/A";
+	const successRate = totalPackets > 0
+		? ((receivedPackets / totalPackets) * 100).toFixed(1)
+		: "N/A";
 
-  $("stats").innerHTML = `
-    📶 平均 RSSI：${avgRSSI} dBm<br/>
-    📦 接收成功率：${successRate}% (${receivedPackets}/${totalPackets})
-  `;
+	$("stats").innerHTML = `
+		📶 平均 RSSI：${avgRSSI} dBm<br/>
+		📦 接收成功率：${successRate}% (${receivedPackets}/${totalPackets})
+  `	;
 }
 
   
