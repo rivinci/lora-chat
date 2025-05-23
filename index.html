@@ -211,6 +211,7 @@
         </select>
       </label>
     </div>
+	<div id="stats" style="text-align:center;margin:10px 0;font-size:0.9em;color:#555;"></div>
 
     <div id="chat-box"></div>
 
@@ -226,6 +227,18 @@
   </div>
 
   <script>
+    const K = {
+	ACC: "accounts",
+	LOGIN: "loggedInUser",
+	THEME: "lora-chat-theme",
+	FONT: "lora-chat-font"
+	};
+	const $ = id => document.getElementById(id);
+
+	let rssiValues = [];
+	let totalPackets = 0;
+	let receivedPackets = 0;
+
     const $ = id => document.getElementById(id);
     const K = { ACC: "accounts", LOGIN: "loggedInUser", THEME: "lora-theme", FONT: "lora-font" };
     
@@ -329,11 +342,23 @@ async function connectBLE() {
     bleTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
     bleRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
-    await bleRX.startNotifications();
     bleRX.addEventListener("characteristicvaluechanged", e => {
-      const msg = new TextDecoder().decode(e.target.value);
-      appendMsg("ESP32", msg);
-    });
+		const msg = new TextDecoder().decode(e.target.value);
+		
+		if (msg.startsWith("RSSI:")) {
+			const rssi = parseInt(msg.split(":")[1]);
+			if (!isNaN(rssi)) {
+				rssiValues.push(rssi);
+				updateStats();
+			}
+		} else {
+			receivedPackets++;
+			appendMsg("ESP32", msg);
+			updateStats();
+			}
+
+		totalPackets++; // 計入嘗試封包
+	});
 
     statusText.textContent = "✅ 已連接 ESP32 BLE";
     appendMsg("系統", "✅ 已連接 ESP32 BLE");
@@ -495,6 +520,20 @@ $("export-acc-btn").addEventListener("click", () => {
   };
   fixInputForMobile();
 }
+function updateStats() {
+  const avgRSSI = rssiValues.length
+    ? Math.round(rssiValues.reduce((a, b) => a + b, 0) / rssiValues.length)
+    : "N/A";
+  const successRate = totalPackets > 0
+    ? ((receivedPackets / totalPackets) * 100).toFixed(1)
+    : "N/A";
+
+  $("stats").innerHTML = `
+    📶 平均 RSSI：${avgRSSI} dBm<br/>
+    📦 接收成功率：${successRate}% (${receivedPackets}/${totalPackets})
+  `;
+}
+
   
 
   </script>
