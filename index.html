@@ -339,21 +339,23 @@ async function connectBLE() {
     bleRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
     bleRX.addEventListener("characteristicvaluechanged", e => {
-		const msg = new TextDecoder().decode(e.target.value);
-		
-		if (msg.startsWith("RSSI:")) {
-			const rssi = parseInt(msg.split(":")[1]);
-			if (!isNaN(rssi)) {
-				rssiValues.push(rssi);
-				updateStats();
-			}
-		} else {
-			receivedPackets++;
-			appendMsg("ESP32", msg);
-			updateStats();
-			}
+		const raw = new TextDecoder().decode(e.target.value);
 
-		totalPackets++; // 計入嘗試封包
+  if (raw.startsWith("RSSI:")) {               // 訊號強度
+    const rssi = parseInt(raw.slice(5));
+    if (!isNaN(rssi)) {
+      rssiValues.push(rssi);
+      updateStats();
+    }
+
+  } else if (raw.startsWith("MSG:")) {         // 聊天訊息
+    const txt = raw.slice(4);
+    receivedPackets++;
+    appendMsg("ESP32", txt);
+    updateStats();
+  }
+
+  totalPackets++;  
 	});
 
     statusText.textContent = "✅ 已連接 ESP32 BLE";
