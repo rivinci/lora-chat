@@ -340,7 +340,7 @@ async function connectBLE() {
 
     bleRX.addEventListener("characteristicvaluechanged", e => {
 		const raw = new TextDecoder().decode(e.target.value);
-
+        	 console.log("[BLE RAW]", raw); 
   if (raw.startsWith("RSSI:")) {               // 訊號強度
     const rssi = parseInt(raw.slice(5));
     if (!isNaN(rssi)) {
