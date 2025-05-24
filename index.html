@@ -337,10 +337,10 @@ async function connectBLE() {
     bleService = await bleServer.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
     bleTX = await bleService.getCharacteristic("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
     bleRX = await bleService.getCharacteristic("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
-
+	await bleRX.startNotifications();
     bleRX.addEventListener("characteristicvaluechanged", e => {
 		const raw = new TextDecoder().decode(e.target.value);
-        	 console.log("[BLE RAW]", raw); 
+
   if (raw.startsWith("RSSI:")) {               // 訊號強度
     const rssi = parseInt(raw.slice(5));
     if (!isNaN(rssi)) {
